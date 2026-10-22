@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lyra UI Docs</title>
+<meta name="description" content="Reference for Lyra UI: window options, methods, every element, themes, flags, icons and chat commands.">
+<meta name="theme-color" content="#0b0a12">
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Unbounded:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav__inner">
+    <a class="brand" href="index.html"><img src="assets/img/logo.svg" alt="" width="34" height="34">Lyra UI <span class="brand__tag">docs</span></a>
+    <button class="btn btn--ghost btn--icon nav__toggle" type="button" id="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Menu"><i data-icon="menu"></i></button>
+    <nav class="nav__links" id="nav-links" aria-label="Main">
+      <a href="index.html#playground">Playground</a>
+      <a href="index.html#components">Components</a>
+      <a href="index.html#themes">Themes</a>
+      <a href="docs.html" aria-current="page">Docs</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs">
+  <aside class="docs__side" aria-label="Documentation sections">
+    <label class="docs__search"><i data-icon="search"></i><span class="sr-only">Filter sections</span><input type="search" id="docs-filter" placeholder="Filter: slider, flag, theme…"></label>
+    <nav class="docs__nav" id="docs-nav">
+      <div><h5>Start</h5><ul>
+        <li><a href="#install">Install</a></li>
+        <li><a href="#first-window">First window</a></li>
+        <li><a href="#flags">Flags &amp; config</a></li>
+      </ul></div>
+      <div><h5>Window</h5><ul>
+        <li><a href="#window">Window options</a></li>
+        <li><a href="#window-methods">Window methods</a></li>
+        <li><a href="#tabs">Tabs</a></li>
+        <li><a href="#settings-tab">Settings tab</a></li>
+        <li><a href="#notify">Notifications</a></li>
+        <li><a href="#confirm">Confirm dialog</a></li>
+        <li><a href="#reopen">Reopen &amp; chat</a></li>
+      </ul></div>
+      <div><h5>Elements</h5><ul>
+        <li><a href="#elements">Overview</a></li>
+        <li><a href="#el-text">Section, Paragraph, Label</a></li>
+        <li><a href="#el-button">Button, ButtonRow, Action</a></li>
+        <li><a href="#el-toggle">Toggle</a></li>
+        <li><a href="#el-slider">Slider</a></li>
+        <li><a href="#el-stepper">Stepper</a></li>
+        <li><a href="#el-dropdown">Dropdown</a></li>
+        <li><a href="#el-input">Input</a></li>
+        <li><a href="#el-textarea">TextArea</a></li>
+        <li><a href="#el-keybind">Keybind</a></li>
+        <li><a href="#el-chips">Chips &amp; Segmented</a></li>
+        <li><a href="#el-layout">Group, Columns, Collapsible</a></li>
+        <li><a href="#el-guide">Guide &amp; Empty</a></li>
+        <li><a href="#el-list">Row &amp; List</a></li>
+        <li><a href="#el-grid">Grid</a></li>
+        <li><a href="#el-preview">Preview (3D)</a></li>
+        <li><a href="#el-strip">Strip</a></li>
+        <li><a href="#el-cards">Link, Profile, Image</a></li>
+      </ul></div>
+      <div><h5>More</h5><ul>
+        <li><a href="#themes">Themes</a></li>
+        <li><a href="#icons">Icons</a></li>
+        <li><a href="#library">Library functions</a></li>
+        <li><a href="#testing">Testing</a></li>
+      </ul></div>
+      <p class="docs__empty" id="docs-empty" hidden>No section matches.</p>
+    </nav>
+  </aside>
+
+  <main class="docs__main">
+    <section class="doc" id="install">
+      <h2>Install</h2>
+      <div class="prose"><p>Lyra UI is one Luau file that returns the <code>Lyra</code> table. Load it in your executor:</p></div>
+      <div class="code"><div class="code__bar">Lua <button class="copy" type="button" data-copy="#code-install"><i data-icon="copy"></i>Copy</button></div><pre><code class="lua" id="code-install">local Lyra = loadstring(game:HttpGet("https://raw.githubusercontent.com/lyraEz/Library-UI/main/src/Lyra.lua"))()</code></pre></div>
+      <div class="callout"><i data-icon="info"></i><span>In Roblox Studio, put <code>src/Lyra.lua</code> in a ModuleScript and <code>require</code> it from a LocalScript. Saving and the embedded icon sheet need executor functions (<code>writefile</code>, <code>getcustomasset</code>), so in Studio the window runs without saving and draws vector icons.</span></div>
+    </section>
+
+    <section class="doc" id="first-window">
+      <h2>First window</h2>
+      <div class="prose"><p>Create a window, add a tab, fill it with elements. Every element returns an object you can keep to read or change it later.</p></div>
+      <div class="code"><pre><code class="lua">local Window = Lyra:CreateWindow({
+    Title = "My Hub",
+    Subtitle = "by you  ·  v1.0",
+    ChatCommand = "hub",
+})
+
+local Main = Window:Tab({Title = "Main", Icon = "star"})
+Main:Section("Main", "Your features go here.")
+
+local enabled = Main:Toggle({Title = "Enabled", Flag = "Enabled", Callback = function(on)
+    print("Enabled:", on)
+end})
+
+Main:Button({Title = "Turn it off", Icon = "x", Callback = function()
+    enabled:Set(false)
+end})
+
+Window:SettingsTab()</code></pre></div>
+      <div class="prose"><p>Callbacks run in their own thread, so they may yield. If one errors, the window keeps working and the error is shown in the status line and the console.</p></div>
+    </section>
+
+    <section class="doc" id="flags">
+      <h2>Flags &amp; config</h2>
+      <div class="prose">
+        <p>Give an element a <code>Flag</code> and its value is stored in <code>Window.Flags</code>, written to <code>LyraUI/&lt;Name&gt;.json</code> with <code>writefile</code> and restored the next time the script runs. When a saved value is restored, the element's callback runs once with it, so your feature turns back on by itself.</p>
+        <p>The same file keeps the interface settings: window size, interface size, theme, blur, reduced motion, the reopen options and the shortcut key.</p>
+      </div>
+      <div class="code"><pre><code class="lua">Main:Slider({Title = "Power", Min = 0, Max = 100, Flag = "Power"})
+
+print(Window:GetFlag("Power"))   -- read
+Window:SetFlag("Power", 75)      -- moves the slider and runs its callback
+Window:Save()                    -- write now (it also saves on its own, 0.4 s after a change)
+
+-- Pick the file, or turn saving off:
+Lyra:CreateWindow({Title = "My Hub", ConfigFile = "MyHub/settings"})
+Lyra:CreateWindow({Title = "My Hub", ConfigFile = false})</code></pre></div>
+      <div class="prose"><p>Only booleans, numbers and strings are saved. A dropdown whose values are tables still works; it just starts from its default each run.</p></div>
+    </section>
+
+    <section class="doc" id="window">
+      <h2>Window options</h2>
+      <div class="doc__sig">Lyra:CreateWindow(options) → Window   ·   also Lyra.new(options)</div>
+      <div class="table"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Default</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>Title</td><td>string</td><td>"Lyra UI"</td><td>Header title. Also the default <code>Name</code>.</td></tr>
+          <tr><td>Subtitle</td><td>string</td><td>"Lyra UI · v1.0.0"</td><td>Small line under the title.</td></tr>
+          <tr><td>Name</td><td>string</td><td>Title</td><td>Identity of the window. Running a script again with the same name replaces the old window. Also names the config file.</td></tr>
+          <tr><td>Theme</td><td>string | table</td><td>"Lavender"</td><td>A built-in theme name or a table of colours (see <a href="#themes">Themes</a>). A theme the player picked in Settings wins.</td></tr>
+          <tr><td>Size</td><td>Vector2 | UDim2 | {W, H}</td><td>820 × 600</td><td>Default size in unscaled pixels. Phones open full height at 560 wide.</td></tr>
+          <tr><td>Scale</td><td>number</td><td>0 (Auto)</td><td>Interface size in percent (50–150). Auto is 100%, or 94% on phones.</td></tr>
+          <tr><td>Keybind</td><td>KeyCode | string</td><td>RightControl</td><td>Key that shows and hides the window.</td></tr>
+          <tr><td>ChatCommand</td><td>string</td><td>none</td><td>"hub" makes <code>/hub</code> and <code>/e hub</code> reopen the window.</td></tr>
+          <tr><td>FloatingButton</td><td>boolean</td><td>true</td><td>Draggable button shown while the window is closed.</td></tr>
+          <tr><td>MenuReopen</td><td>boolean</td><td>true</td><td>Opening and closing the Roblox menu 3 times within 5 s reopens a hidden window.</td></tr>
+          <tr><td>Blur</td><td>boolean</td><td>true</td><td>Blurs the game behind the open window.</td></tr>
+          <tr><td>StartHidden</td><td>boolean</td><td>false</td><td>Starts closed. Skipped when nothing could reopen the window.</td></tr>
+          <tr><td>Notifications</td><td>boolean</td><td>true</td><td>Shows toasts.</td></tr>
+          <tr><td>ReducedMotion</td><td>boolean</td><td>false</td><td>Turns off window animations.</td></tr>
+          <tr><td>LowEffects</td><td>boolean</td><td>false</td><td>Performance mode: no blur, no glass, no animation.</td></tr>
+          <tr><td>ConfigFile</td><td>string | false</td><td>"LyraUI/&lt;Name&gt;.json"</td><td>Where flags and settings are saved. <code>false</code> turns saving off.</td></tr>
+          <tr><td>Logo</td><td>asset id | string</td><td>none</td><td>Image for the brand mark and the floating button.</td></tr>
+          <tr><td>LogoText</td><td>string</td><td>initials of Title</td><td>Letters shown when there is no Logo.</td></tr>
+          <tr><td>NavCaption</td><td>string</td><td>"WORKSPACE"</td><td>Caption above the tabs.</td></tr>
+          <tr><td>Footer</td><td>string</td><td>Title in capitals</td><td>Text at the bottom of the rail.</td></tr>
+          <tr><td>Status</td><td>string</td><td>"Ready."</td><td>First text of the status line.</td></tr>
+          <tr><td>CloseAction</td><td>"Hide" | "Destroy"</td><td>"Hide"</td><td>"Destroy" makes the X ask, then close the window for good.</td></tr>
+          <tr><td>Parent</td><td>Instance</td><td>gethui() or PlayerGui</td><td>Where the ScreenGui goes.</td></tr>
+          <tr><td>DisplayOrder</td><td>number</td><td>990</td><td>ScreenGui display order.</td></tr>
+          <tr><td>OnVisibilityChanged</td><td>function(visible)</td><td>none</td><td>Runs when the window opens or closes.</td></tr>
+          <tr><td>OnDestroy</td><td>function()</td><td>none</td><td>Runs after <code>Window:Destroy()</code>.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="doc" id="window-methods">
+      <h2>Window methods</h2>
+      <div class="table"><table>
+        <thead><tr><th>Method</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>Tab(spec)</td><td>Adds a tab. See <a href="#tabs">Tabs</a>. Alias: <code>AddTab</code>.</td></tr>
+          <tr><td>SettingsTab(spec)</td><td>Adds the built-in Settings tab and returns it.</td></tr>
+          <tr><td>SelectTab(tab | title)</td><td>Opens a tab.</td></tr>
+          <tr><td>Notify(spec)</td><td>Shows a toast and returns a handle with <code>Dismiss()</code>.</td></tr>
+          <tr><td>Status(text, kind)</td><td>Sets the status line. Kinds: info, success, warning, error, loading.</td></tr>
+          <tr><td>Confirm(spec)</td><td>Asks a question inside the window. Alias: <code>Dialog</code>.</td></tr>
+          <tr><td>Show() · Hide() · Toggle()</td><td>Open or close with the flight animation. <code>Hide</code> also says how to reopen when there is no floating button.</td></tr>
+          <tr><td>SetVisible(bool)</td><td>Opens or closes without the hint.</td></tr>
+          <tr><td>Minimize(bool) · Maximize(bool)</td><td>Collapse to the header, or fill the screen.</td></tr>
+          <tr><td>SetTheme(name | table)</td><td>Repaints every instance. <code>GetTheme()</code> returns the colours and the name.</td></tr>
+          <tr><td>SetTitle(title, subtitle)</td><td>Changes the header text.</td></tr>
+          <tr><td>SetScale(percent)</td><td>Interface size; 0 is Auto.</td></tr>
+          <tr><td>ResetSize()</td><td>Back to the default size and interface size, centred.</td></tr>
+          <tr><td>GetFlag(name) · SetFlag(name, value)</td><td>Read or change a flagged element. <code>Window.Flags</code> holds every value.</td></tr>
+          <tr><td>Save()</td><td>Writes the config file now.</td></tr>
+          <tr><td>Command(name, fn)</td><td>Chat command: <code>/name args</code> or <code>/e name args</code> calls <code>fn(args)</code>.</td></tr>
+          <tr><td>Connect(signal, fn)</td><td>Connects a signal and disconnects it when the window is destroyed.</td></tr>
+          <tr><td>Destroy()</td><td>Removes the window, the blur, its chat commands and connections.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="doc" id="tabs">
+      <h2>Tabs</h2>
+      <div class="doc__sig">Window:Tab({Title, Icon, OnSelect, Gap}) → Tab   ·   Window:Tab(title, icon)</div>
+      <div class="prose">
+        <p>A tab is a scrolling page with a button on the side rail. The rail is 196 px with labels on wide windows, a 60 px icon rail below 760 px and a drawer behind a menu button below 520 px.</p>
+        <p>Tabs, groups, columns and collapsible sections are all containers: they take the same element methods. A tab also has <code>Select()</code> and <code>SetVisible(bool)</code>, which takes it off the rail.</p>
+      </div>
+      <div class="code"><pre><code class="lua">local Players = Window:Tab({Title = "Players", Icon = "users", OnSelect = function()
+    refreshList()
+end})</code></pre></div>
+    </section>
+
+    <section class="doc" id="settings-tab">
+      <h2>Settings tab</h2>
+      <div class="doc__sig">Window:SettingsTab({Title, Icon, Description, Themes}) → Tab</div>
+      <div class="prose"><p>Adds interface size, window size reset, theme, notifications, start hidden, a live list of the ways to reopen the window, the floating button, the Roblox menu shortcut and the shortcut key, plus blur, reduced motion and performance mode under "Show advanced options". Add your own options to the returned tab. <code>Themes = false</code> hides the theme picker.</p></div>
+      <div class="code"><pre><code class="lua">local Settings = Window:SettingsTab()
+Settings:Section("Script")
+Settings:Toggle({Title = "Auto execute", Flag = "AutoExecute"})</code></pre></div>
+    </section>
+
+    <section class="doc" id="notify">
+      <h2>Notifications</h2>
+      <div class="doc__sig">Window:Notify({Title, Text, Kind, Icon, Image, Duration, Action, Featured, Dismissible, Force}) → handle</div>
+      <div class="table"><table>
+        <thead><tr><th>Field</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>Title</td><td>Required. A string alone also works: <code>Window:Notify("Saved")</code>.</td></tr>
+          <tr><td>Text</td><td>Second line; wraps.</td></tr>
+          <tr><td>Kind</td><td>"info" (default), "success", "warning" or "error". Sets colour and glyph.</td></tr>
+          <tr><td>Icon</td><td>Icon name drawn in the badge instead of the kind's glyph.</td></tr>
+          <tr><td>Image</td><td>Picture in the badge.</td></tr>
+          <tr><td>Duration</td><td>Seconds, default 4. 0 keeps it until tapped.</td></tr>
+          <tr><td>Action</td><td><code>{Text = "Open", Callback = fn}</code>: a button under the text.</td></tr>
+          <tr><td>Featured</td><td>Wider card, larger badge, stronger accent.</td></tr>
+          <tr><td>Dismissible</td><td>false: a tap on the card does not close it.</td></tr>
+          <tr><td>Force</td><td>Shows even when the player turned notifications off.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="prose"><p>Up to four toasts stack in the bottom-right corner; the oldest leaves when a fifth arrives. A hairline under each one shows the time left.</p></div>
+    </section>
+
+    <section class="doc" id="confirm">
+      <h2>Confirm dialog</h2>
+      <div class="doc__sig">Window:Confirm({Title, Text, Confirm, Cancel, Seconds, Callback, OnCancel})   ·   Window:Confirm(title, text, callback)</div>
+      <div class="code"><pre><code class="lua">Window:Confirm({
+    Title = "Reset everything?",
+    Text = "Every saved value goes back to its default.",
+    Confirm = "Reset", Cancel = "Keep",
+    Seconds = 10, -- cancels on its own, counting down on the button
+    Callback = resetAll,
+})</code></pre></div>
+    </section>
+
+    <section class="doc" id="reopen">
+      <h2>Reopen &amp; chat</h2>
+      <div class="prose">
+        <p>A closed window comes back through any of these, and Settings shows which of them work on the player's device:</p>
+        <ul>
+          <li><strong>Floating button</strong>: on by default, draggable.</li>
+          <li><strong>Shortcut key</strong>: RightControl unless you set <code>Keybind</code>; players can change it in Settings.</li>
+          <li><strong>Roblox menu</strong>: opening and closing it 3 times within 5 s. A toast explains it and offers to turn it off.</li>
+          <li><strong>Chat</strong>: <code>/hub</code> or <code>/e hub</code> with <code>ChatCommand = "hub"</code>. Not offered on accounts that cannot chat.</li>
+        </ul>
+        <p>With the floating button off, the first close asks for confirmation and names the ways back. If none would work, the close button offers to turn the Roblox menu shortcut on first.</p>
+      </div>
+      <div class="code"><pre><code class="lua">Window:Command("tp", function(args)
+    -- "/tp spawn" or "/e tp spawn" runs this with args = "spawn"
+end)</code></pre></div>
+    </section>
+
+    <section class="doc" id="elements">
+      <h2>Elements</h2>
+      <div class="prose">
+        <p>Call these on any container (tab, group, column, collapsible section). Each returns an object with <code>Root</code>, <code>SetVisible(bool)</code> and <code>Destroy()</code>; elements that hold a value add <code>Set(value, silent)</code> and <code>Get()</code>. <code>silent = true</code> skips the callback.</p>
+        <p>Every name also exists with an <code>Add</code> prefix (<code>Tab:AddToggle</code>) for people coming from other libraries.</p>
+      </div>
+    </section>
+
+    <section class="doc" id="el-text">
+      <h2>Section, Paragraph, Label, Divider</h2>
+      <div class="doc__sig">Section(title, description) · Paragraph(text, {Muted, Size, Bold, RichText, Color}) · Label(text, color) · Divider()</div>
+      <div class="code"><pre><code class="lua">Tab:Section("Farming", "Everything that runs on its own.")
+Tab:Paragraph("Rich &lt;b&gt;text&lt;/b&gt; works when you ask for it.", {RichText = true, Muted = true})
+local count = Tab:Label("0 items")
+count:Set("12 items", "Green") -- text and an optional theme colour name
+Tab:Divider()</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-button">
+      <h2>Button, ButtonRow, Action</h2>
+      <div class="doc__sig">Button({Title, Icon, Primary, Callback, Height, Enabled}) → {SetText, SetEnabled, SetPrimary, Fire}</div>
+      <div class="code"><pre><code class="lua">local run = Tab:Button({Title = "Run", Icon = "arrow", Primary = true, Callback = run})
+run:SetEnabled(false)
+
+-- Equal-width buttons in one row; on narrow windows they drop their icons.
+Tab:ButtonRow({
+    {Title = "Undo", Icon = "undo", Callback = undo},
+    {Title = "Customize", Icon = "pencil", Primary = true, Callback = customize},
+    {Title = "Restore", Icon = "reset", Callback = restore},
+})
+
+-- A settings card with a button on the right.
+Tab:Action({Title = "Window size", Description = "Back to the default.", Button = "Reset", Icon = "reset", Callback = reset})</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-toggle">
+      <h2>Toggle</h2>
+      <div class="doc__sig">Toggle({Title, Description, Default, Flag, Callback(on)}) → {Set, Get, Toggle}</div>
+      <div class="code"><pre><code class="lua">local fly = Tab:Toggle({Title = "Glide", Description = "Slower falls.", Default = false, Flag = "Glide",
+    Callback = function(on) setGlide(on) end})
+fly:Set(true)</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-slider">
+      <h2>Slider</h2>
+      <div class="doc__sig">Slider({Title, Description, Min, Max, Step, Default, Suffix, Format, Flag, Callback(value), Released(value)})</div>
+      <div class="prose"><p>Drag or tap anywhere on the track. Values snap to <code>Step</code> (decimals work: 0.1, 0.25). <code>Callback</code> runs on every change; <code>Released</code> once when the finger or mouse lets go.</p></div>
+      <div class="code"><pre><code class="lua">Tab:Slider({Title = "Field of view", Min = 50, Max = 110, Step = 1, Default = 70, Suffix = "°", Flag = "FOV",
+    Callback = function(value) workspace.CurrentCamera.FieldOfView = value end})</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-stepper">
+      <h2>Stepper</h2>
+      <div class="doc__sig">Stepper({Title, Description, Values | Min, Max, Step, Default, Format, Suffix, Flag, Callback(value)})</div>
+      <div class="code"><pre><code class="lua">Tab:Stepper({Title = "Timer", Values = {10, 30, 60, 120, 300}, Default = 60,
+    Format = function(s) return s &lt; 60 and (s .. " s") or ((s / 60) .. " min") end})</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-dropdown">
+      <h2>Dropdown</h2>
+      <div class="doc__sig">Dropdown({Title, Description, Options, Default, Placeholder, Width, Flag, Callback(value)}) → {Set, Get, SetOptions(options, keepValue)}</div>
+      <div class="prose"><p>Options are strings or <code>{Value = any, Label = string}</code>. With a <code>Title</code> the picker sits on a settings card; without one it fills the width. The list floats above the window, so a scrolling page never clips it, and scrolling or tapping outside closes it.</p></div>
+      <div class="code"><pre><code class="lua">local mode = Tab:Dropdown({Title = "Mode", Options = {
+    {Value = "fast", Label = "Fast"},
+    {Value = "safe", Label = "Safe"},
+}, Default = "safe", Flag = "Mode"})
+
+mode:SetOptions({"Low", "High"}) -- keeps the value if it still exists</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-input">
+      <h2>Input</h2>
+      <div class="doc__sig">Input({Title, Placeholder, Icon, Default, Button, ButtonIcon, Numeric, MaxLength, ClearOnFocus, Debounce, Changed(text), Flag, Callback(text, enterPressed)}) → {Set, Get, Focus, Box}</div>
+      <div class="code"><pre><code class="lua">Tab:Input({
+    Title = "Target", Placeholder = "Username or ID", Icon = "user",
+    Button = true,                     -- arrow button on the right
+    Changed = function(text) preview(text) end, -- while typing, after Debounce (0.25 s)
+    Callback = function(text, enter) if enter then apply(text) end end,
+})
+Tab:Input({Placeholder = "Amount", Numeric = true, MaxLength = 6, Icon = false})</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-textarea">
+      <h2>TextArea</h2>
+      <div class="doc__sig">TextArea({Text, Placeholder, Height, Editable, Code, Flag, Callback(text)}) → {Set, Get, Copy, Box}   ·   alias: Code</div>
+      <div class="code"><pre><code class="lua">local share = Tab:Code({Text = exportString(), Editable = false, Height = 70})
+share:Copy() -- uses setclipboard when the executor has it</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-keybind">
+      <h2>Keybind</h2>
+      <div class="doc__sig">Keybind({Title, Description, Default, Blocked, Flag, Callback(key), Changed(key)}) → {Set, Get}</div>
+      <div class="prose"><p>Tap the button, then press a key; Esc cancels and the capture gives up after 10 s. <code>Callback</code> runs whenever the key is pressed in game (not while typing). <code>Blocked</code> lists key names that cannot be chosen.</p></div>
+      <div class="code"><pre><code class="lua">Tab:Keybind({Title = "Dash", Default = Enum.KeyCode.Q, Flag = "DashKey", Blocked = {"W", "A", "S", "D"},
+    Callback = function() dash() end})</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-chips">
+      <h2>Chips &amp; Segmented</h2>
+      <div class="doc__sig">Chips({Options, Default, Small, Flag, Callback}) · Segmented({Options, Default, Height, Gap, Flag, Callback})</div>
+      <div class="code"><pre><code class="lua">Tab:Chips({Options = {"All", "Hats", "Faces"}, Callback = filter})
+Tab:Chips({Options = {"Shirts", "Pants"}, Small = true}) -- a lighter second row
+
+Tab:Segmented({Options = {
+    {Label = "Favorites", Icon = "star", Value = "fav"},
+    {Label = "Recent", Icon = "history", Value = "recent"},
+}, Callback = function(which) render(which) end})</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-layout">
+      <h2>Group, Columns, Collapsible</h2>
+      <div class="doc__sig">Group({Title, Gap, Padding}) → container · Columns({Gap}) → left, right · Collapsible({Title, OpenTitle, Open, Callback}) → container</div>
+      <div class="prose"><p>Columns sit side by side and stack on narrow windows. A collapsible section starts folded so a page stays short; it adds <code>SetOpen(bool)</code> and <code>IsOpen()</code>.</p></div>
+      <div class="code"><pre><code class="lua">local status = Tab:Group({Title = "CYCLE STATUS"})
+status:Paragraph("Waiting for the first switch.")
+
+local left, right = Tab:Columns()
+left:Toggle({Title = "Left option"})
+right:Toggle({Title = "Right option"})
+
+local advanced = Tab:Collapsible() -- "Show advanced options" / "Hide advanced options"
+advanced:Toggle({Title = "Developer mode", Flag = "Dev"})</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-guide">
+      <h2>Guide &amp; Empty</h2>
+      <div class="doc__sig">Guide({Title, OpenTitle, Lines, Note, Open}) · Empty({Title, Text, Icon})</div>
+      <div class="code"><pre><code class="lua">Tab:Guide({Title = "How it works", Lines = {
+    "1. Join a game and build your outfit.",
+    "2. Come back here and tap Save.",
+}, Note = "Saved items stay on this device."})
+
+Tab:Empty({Title = "Nothing here yet", Text = "Items you add appear here.", Icon = "box"})</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-list">
+      <h2>Row &amp; List</h2>
+      <div class="doc__sig">List({Items, Reorderable, OnReorder(from, to, items), EmptyTitle, EmptyText, EmptyIcon, Empty}) → {Add, Remove, Set, Get, Clear, Refresh}</div>
+      <div class="prose"><p>A row has a picture or icon, a title, a subtitle and buttons. Buttons with an icon and a title keep only the icon on narrow windows (<code>Collapse = false</code> keeps the title). Button callbacks receive <code>(item, row)</code>. With <code>Reorderable</code>, rows get number badges: drag the number or the picture to move a row; a line shows where it lands and the page scrolls near its edges.</p></div>
+      <div class="code"><pre><code class="lua">local queue = Tab:List({Reorderable = true, EmptyTitle = "Queue is empty",
+    OnReorder = function(from, to, items) save(items) end})
+
+queue:Add({
+    Title = "Vega", Subtitle = "@vega", Current = true,
+    Image = "rbxthumb://type=AvatarHeadShot&amp;id=1&amp;w=150&amp;h=150",
+    Buttons = {
+        {Title = "Wear", Primary = true, Callback = function(item) wear(item) end},
+        {Title = "Preview", Icon = "box", Callback = preview},
+        {Icon = "x", Callback = function(item) queue:Remove(item) end},
+    },
+})
+
+-- A single row anywhere:
+local row = Tab:Row({Title = "Server", Subtitle = "12 players", Icon = "users"})
+row:SetSelected(true)</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-grid">
+      <h2>Grid</h2>
+      <div class="doc__sig">Grid({Items, MinWidth = 150, CellHeight = 200, MinColumns = 2, MaxColumns = 6}) → {Add, Set, Clear, Cards}</div>
+      <div class="prose"><p>Columns are sized in whole pixels so every row fits exactly. An item has <code>Title</code>, <code>Caption</code>, <code>Image</code> or <code>Icon</code>, <code>Tag</code> (a pill such as "NEW"), <code>Checked</code> (green check), <code>Button</code> (false, a title, or <code>{Title, Primary, Icon, Callback(item, card)}</code>) and <code>OnClick</code> for the picture. Cards have <code>SetChecked</code>, <code>SetCaption</code> and <code>SetTitle</code>.</p></div>
+      <div class="code"><pre><code class="lua">local shop = Tab:Grid({})
+shop:Add({Title = "Korblox Leg", Caption = "Body · R$ 17,000", Image = "rbxthumb://type=Asset&amp;id=139607718&amp;w=150&amp;h=150",
+    Button = {Title = "Try on", Callback = function(item, card) card:SetChecked(true) end}})</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-preview">
+      <h2>Preview (3D)</h2>
+      <div class="doc__sig">Preview({Title, Height, Hint, Icon, ControlsHint, Anchor}) → {SetModel(model, keepView), SetImage(image, message), Loading(on, message), Clear(message), SetTitle}</div>
+      <div class="prose"><p>A ViewportFrame with a WorldModel: drag to rotate, scroll or use the buttons to zoom, reset with one tap. Pass a model you own (a clone); the preview destroys the previous one. Parts are anchored unless <code>Anchor = false</code>.</p></div>
+      <div class="code"><pre><code class="lua">local view = Tab:Preview({Title = "YOUR CHARACTER", Hint = "Tap Load."})
+view:Loading(true, "Building the preview…")
+local character = game.Players.LocalPlayer.Character
+character.Archivable = true
+view:SetModel(character:Clone())</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-strip">
+      <h2>Strip</h2>
+      <div class="doc__sig">Strip({Title, Icon, Hint, Empty, Items, Buttons, ScrollToEnd}) → {Set(items), SetHint(text), Buttons}</div>
+      <div class="code"><pre><code class="lua">local history = Tab:Strip({Title = "Timeline", Buttons = {
+    {Title = "Undo", Icon = "undo", Callback = undo},
+    {Title = "Restore", Icon = "reset", Callback = restore},
+}})
+history:Set({
+    {Label = "Original", Image = headshot(you), Callback = goBack},
+    {Label = "Now", Image = headshot(target), Current = true},
+})</code></pre></div>
+    </section>
+
+    <section class="doc" id="el-cards">
+      <h2>Link, Profile, Image</h2>
+      <div class="prose"><p><code>Link</code> shows an underlined URL with a Copy link button; without clipboard access the URL becomes selectable text. <code>Profile</code> shows a portrait (an image, a web image downloaded with <code>ImageUrl</code>, or an initial), a caption, a name, a handle, a rich-text bio and an optional link. <code>Image</code> is a rounded picture with an optional caption.</p></div>
+      <div class="code"><pre><code class="lua">Tab:Link({Title = "Discord", Subtitle = "Join the community", Icon = "discord", Url = "https://discord.gg/8bxXcn2Vfb"})
+Tab:Profile({Caption = "GITHUB PROFILE", Title = "lyraEz", Handle = "@lyraEz",
+    ImageUrl = "https://github.com/lyraEz.png?size=256", Url = "https://github.com/lyraEz",
+    Bio = "The moon reminds me that even in darkness, there's always a &lt;b&gt;beautiful light&lt;/b&gt;"})
+Tab:Image({Image = "rbxassetid://123", Height = 140, Caption = "Season 2"})</code></pre></div>
+    </section>
+
+    <section class="doc" id="themes">
+      <h2>Themes</h2>
+      <div class="prose">
+        <p>Built in: <strong>Lavender</strong> (the default), <strong>Midnight</strong>, <strong>Rose</strong>, <strong>Mint</strong> and <strong>Ember</strong>. A theme is a table of Color3 values with these keys: <code>Base</code> (window), <code>Card</code>, <code>Raised</code> (buttons and inputs), <code>Line</code>, <code>Accent</code>, <code>AccentDark</code>, <code>Text</code>, <code>Muted</code>, <code>Green</code>, <code>Red</code>, <code>Gold</code>, <code>Link</code>, <code>SheenA</code> and <code>SheenB</code> (the window's sheen). Missing keys come from Lavender, or from the theme named in <code>Extends</code>.</p>
+        <p>Every instance stores the theme key of its colours, so <code>SetTheme</code> repaints the live window without rebuilding anything.</p>
+      </div>
+      <div class="code"><pre><code class="lua">Lyra.AddTheme("Aurora", {Base = Color3.fromRGB(12, 22, 26), Accent = Color3.fromRGB(120, 230, 210)})
+Window:SetTheme("Aurora")
+Window:SetTheme({Extends = "Midnight", Accent = Color3.fromRGB(255, 120, 160)}) -- one-off palette</code></pre></div>
+    </section>
+
+    <section class="doc" id="icons">
+      <h2>Icons</h2>
+      <div class="prose"><p>Pass any of these names as <code>Icon</code>. Aliases also work: avatar, players, collection, settings, creator, code, close, expand, undo, arrow, reset, trash, share, edit, game, refresh, warning, success, error, hidden, sliders. An <code>rbxassetid://</code> string or a number uses your own image, tinted with the theme.</p></div>
+      <div class="icons-grid" id="icons-grid"></div>
+    </section>
+
+    <section class="doc" id="library">
+      <h2>Library functions</h2>
+      <div class="table"><table>
+        <thead><tr><th>Function</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>Lyra:CreateWindow(options)</td><td>Creates a window. <code>Lyra.new</code> is the same.</td></tr>
+          <tr><td>Lyra.AddTheme(name, colors)</td><td>Registers a theme (missing keys from Lavender).</td></tr>
+          <tr><td>Lyra.Themes · Lyra.ThemeNames</td><td>Every theme by name, and the names in order.</td></tr>
+          <tr><td>Lyra.GetWindow(name)</td><td>The live window with that name, if any.</td></tr>
+          <tr><td>Lyra.DestroyAll()</td><td>Destroys every Lyra window.</td></tr>
+          <tr><td>Lyra.WebImage(url, file)</td><td>Downloads a PNG or JPEG and returns an asset id (needs request or HttpGet, writefile and getcustomasset). Yields.</td></tr>
+          <tr><td>Lyra.Toast</td><td>The notifier on its own: <code>Lyra.Toast.new({Parent = frame})</code>.</td></tr>
+          <tr><td>Lyra.Font · Lyra.Version</td><td>The fonts in use (Builder Sans, falling back to Gotham) and the version string.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="doc" id="testing">
+      <h2>Testing</h2>
+      <div class="prose"><p>The repository runs the library outside Roblox against a small stand-in of the Roblox API (<code>tests/mock.lua</code>). It builds the showcase, clicks through every element, resizes, drags, closes and reopens the window, switches themes and checks the saved config, and fails on any misspelled property, wrong value type or error inside a callback.</p></div>
+      <div class="code"><pre><code>tests/run.sh path/to/luau</code></pre></div>
+    </section>
+  </main>
+</div>
+
+<footer class="footer">
+  <div class="wrap footer__row">
+    <a class="brand" href="index.html"><img src="assets/img/logo.svg" alt="" width="30" height="30">Lyra UI</a>
+    <nav aria-label="Footer"><a href="index.html">Home</a><a href="index.html#playground">Playground</a><a href="https://discord.gg/8bxXcn2Vfb" target="_blank" rel="noopener">Discord</a></nav>
+  </div>
+</footer>
+
+<script src="assets/js/icons.js" defer></script>
+<script src="assets/js/site.js" defer></script>
+<script src="assets/js/docs.js" defer></script>
+</body>
+</html>

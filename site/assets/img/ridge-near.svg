@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 260" preserveAspectRatio="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="ridge-near" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b1729"/>
+      <stop offset=".7" stop-color="#0b0a12"/>
+    </linearGradient>
+  </defs>
+  <path d="M0 190C120 150 210 170 330 176S520 120 660 132S860 206 1000 196S1230 130 1440 160V260H0Z" fill="url(#ridge-near)"/>
+  <path d="M0 190C120 150 210 170 330 176S520 120 660 132S860 206 1000 196S1230 130 1440 160" fill="none" stroke="#bca7f6" stroke-opacity=".18" stroke-width="1.5"/>
+</svg>

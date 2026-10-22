@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 260" preserveAspectRatio="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="ridge-far" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2342"/>
+      <stop offset="1" stop-color="#14111f"/>
+    </linearGradient>
+  </defs>
+  <path d="M0 150C90 120 160 92 250 104S410 170 520 150S690 66 800 78S960 150 1080 140S1290 70 1440 96V260H0Z" fill="url(#ridge-far)"/>
+</svg>

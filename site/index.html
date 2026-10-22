@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lyra UI</title>
+<meta name="description" content="Lyra UI is a native Roblox interface library: a resizable glass window with a responsive side rail, toasts, saved settings, themes and 29 elements in one Luau file.">
+<meta name="theme-color" content="#0b0a12">
+<meta property="og:title" content="Lyra UI">
+<meta property="og:description" content="A resizable, responsive Roblox hub library in one Luau file.">
+<meta property="og:image" content="assets/img/og.png">
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Unbounded:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+<header class="nav" id="top">
+  <div class="wrap nav__inner">
+    <a class="brand" href="index.html"><img src="assets/img/logo.svg" alt="" width="34" height="34">Lyra UI <span class="brand__tag">v1.0.0</span></a>
+    <button class="btn btn--ghost btn--icon nav__toggle" type="button" id="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Menu"><i data-icon="menu"></i></button>
+    <nav class="nav__links" id="nav-links" aria-label="Main">
+      <a href="#features">Features</a>
+      <a href="#playground">Playground</a>
+      <a href="#components">Components</a>
+      <a href="#themes">Themes</a>
+      <a href="#start">Get started</a>
+      <a href="docs.html">Docs</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- HERO ---------------------------------------------------------------- -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="sky" aria-hidden="true">
+      <canvas class="sky__layer sky__stars" id="stars"></canvas>
+      <div class="sky__layer sky__nebula sky__nebula--a" data-depth="0.06" data-scroll="0.12"></div>
+      <div class="sky__layer sky__nebula sky__nebula--b" data-depth="0.04" data-scroll="0.08"></div>
+      <img class="sky__layer sky__lyra" src="assets/img/lyra.svg" alt="" data-depth="0.18" data-scroll="0.22">
+      <img class="sky__layer sky__moon" src="assets/img/moon.svg" alt="" data-depth="0.12" data-scroll="0.32">
+      <div class="sky__layer sky__ridge sky__ridge--far" data-depth="0.03" data-scroll="-0.06"><img src="assets/img/ridge-far.svg" alt=""></div>
+      <div class="sky__layer sky__ridge" data-depth="0.015" data-scroll="-0.14"><img src="assets/img/ridge-near.svg" alt=""></div>
+    </div>
+    <div class="wrap hero__grid">
+      <div class="hero__copy">
+        <span class="eyebrow"><i data-icon="moon"></i> Roblox interface library</span>
+        <h1 id="hero-title">Roblox hubs, <em>finished.</em></h1>
+        <p class="hero__lede">Lyra UI is the window from Lyra Avatar Studio, packaged as a library. A resizable glass hub with a side rail that adapts to any screen, toasts, saved settings and 29 elements, built from native instances in one Luau file.</p>
+        <div class="install" role="group" aria-label="Load the library">
+          <code id="install-code">loadstring(game:HttpGet("https://raw.githubusercontent.com/lyraEz/Library-UI/main/src/Lyra.lua"))()</code>
+          <button class="copy" type="button" data-copy="#install-code"><i data-icon="copy"></i>Copy</button>
+        </div>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="#playground"><i data-icon="sparkles"></i>Try the playground</a>
+          <a class="btn btn--ghost" href="docs.html"><i data-icon="book"></i>Read the docs</a>
+        </div>
+        <div class="hero__meta">
+          <span><i data-icon="phone"></i>PC and mobile</span>
+          <span><i data-icon="save"></i>Settings saved with writefile</span>
+          <span><i data-icon="palette"></i>5 themes</span>
+        </div>
+      </div>
+
+      <div class="hero__art" id="hero-art">
+        <div class="hero__tilt" id="hero-tilt">
+          <div class="hero__frame" id="hero-frame">
+            <div class="lw" inert aria-hidden="true">
+              <div class="lw-head">
+                <span class="lw-logo">LS</span>
+                <div class="lw-titles"><b>Lyra Showcase</b><small>Lyra UI · v1.0.0</small></div>
+                <div class="lw-actions">
+                  <span class="lw-ib"><i data-icon="minus"></i></span>
+                  <span class="lw-ib"><i data-icon="maximize"></i></span>
+                  <span class="lw-ib"><i data-icon="x"></i></span>
+                </div>
+              </div>
+              <div class="lw-rail">
+                <div class="lw-rail__cap">WORKSPACE</div>
+                <span class="lw-tab"><i data-icon="user"></i><span>Home</span></span>
+                <span class="lw-tab" aria-selected="true"><i data-icon="sliders"></i><span>Controls</span></span>
+                <span class="lw-tab"><i data-icon="users"></i><span>Players</span></span>
+                <span class="lw-tab"><i data-icon="box"></i><span>Shop</span></span>
+                <span class="lw-tab"><i data-icon="gamepad"></i><span>Viewer</span></span>
+                <span class="lw-tab"><i data-icon="code"></i><span>About</span></span>
+                <span class="lw-tab"><i data-icon="sliders"></i><span>Settings</span></span>
+                <div class="lw-rail__foot">LYRA<br>SHOWCASE</div>
+              </div>
+              <div class="lw-back"></div>
+              <div class="lw-content">
+                <div class="lw-page is-on">
+                  <div class="lw-sec"><h4>Controls</h4><p>Values with a Flag are saved and restored next run.</p></div>
+                  <div class="lw-card lw-ctrl"><div class="lw-ctrl__text"><b>Auto collect</b><span>Collects drops near your character.</span></div><span class="lw-switch" aria-checked="true"></span></div>
+                  <div class="lw-card lw-ctrl"><div class="lw-ctrl__text"><b>Field of view</b><span>Your camera's field of view.</span></div><div class="lw-slider"><output>90°</output><div class="lw-track"><div class="lw-fill" style="width:66%"></div><div class="lw-knob" style="left:66%"></div></div></div></div>
+                  <div class="lw-card lw-ctrl"><div class="lw-ctrl__text"><b>Round length</b><span>How long each round lasts.</span></div><div class="lw-stepper"><span class="lw-btn"><i data-icon="minus"></i></span><output>2 min</output><span class="lw-btn"><i data-icon="plus"></i></span></div></div>
+                  <div class="lw-card lw-ctrl"><div class="lw-ctrl__text"><b>Quality</b><span>Pick one of several options.</span></div><span class="lw-drop">Ultra <i data-icon="chevron-down"></i></span></div>
+                  <div class="lw-chips"><span class="lw-chip" aria-pressed="true">All</span><span class="lw-chip">Weapons</span><span class="lw-chip">Pets</span><span class="lw-chip">Cosmetics</span></div>
+                </div>
+              </div>
+              <div class="lw-status" data-kind="success"><i></i><span>Auto collect is on.</span></div>
+              <span class="lw-grip"></span>
+            </div>
+          </div>
+          <div class="lw-toast hero__toast" style="--k: var(--w-green)" aria-hidden="true">
+            <span class="lw-toast__badge"><i data-icon="check"></i></span>
+            <div><b>Config saved</b><span>Restored on your next run.</span></div>
+            <span class="lw-toast__bar" style="animation-duration: 6s; animation-iteration-count: infinite"></span>
+          </div>
+          <span class="lw-orb hero__orb" aria-hidden="true">LS</span>
+        </div>
+      </div>
+    </div>
+    <a class="scroll-cue" href="#features"><i data-icon="chevron-down"></i>Scroll</a>
+  </section>
+
+  <!-- FACTS ---------------------------------------------------------------- -->
+  <div class="facts">
+    <div class="wrap facts__row">
+      <div class="fact"><b>29</b><span>elements, from toggles to a 3D viewer</span></div>
+      <div class="fact"><b>5</b><span>themes, switchable live</span></div>
+      <div class="fact"><b>1 file</b><span>no assets to upload</span></div>
+      <div class="fact"><b>110</b><span>automated checks per change</span></div>
+    </div>
+  </div>
+
+  <!-- FEATURES ------------------------------------------------------------- -->
+  <section class="section" id="features" aria-labelledby="features-title">
+    <img class="drift" src="assets/img/lyra.svg" alt="" aria-hidden="true" style="right:-40px;top:40px;width:180px;opacity:.25" data-scroll="0.18">
+    <div class="wrap features">
+      <div class="features__intro">
+        <span class="section__kicker">What you get</span>
+        <h2 id="features-title">The details players notice, already done.</h2>
+        <p class="hero__lede">Every behaviour comes from a hub that real players use every day, on phones and on PC.</p>
+        <a class="btn btn--ghost" href="docs.html#window" style="width:fit-content"><i data-icon="book"></i>Window reference</a>
+      </div>
+      <div class="features__list">
+        <div class="feature"><span class="feature__icon"><i data-icon="resize"></i></span><h3>Resize from the corner</h3><p>Drag the grip to any size. A badge shows the size in pixels, and the window remembers it next run.</p></div>
+        <div class="feature"><span class="feature__icon"><i data-icon="layers"></i></span><h3>A rail that adapts</h3><p>196 px with labels on wide windows, a 60 px icon rail on medium ones, a drawer behind a menu button on phones.</p></div>
+        <div class="feature"><span class="feature__icon"><i data-icon="moon"></i></span><h3>Flight animation</h3><p>Closing shrinks the window into a draggable floating button, and it grows back out along a straight line.</p></div>
+        <div class="feature"><span class="feature__icon"><i data-icon="keyboard"></i></span><h3>Always a way back</h3><p>A shortcut key, the floating button, a chat command and opening the Roblox menu three times. Hiding is guarded when none of them work.</p></div>
+        <div class="feature"><span class="feature__icon"><i data-icon="bell"></i></span><h3>Toasts</h3><p>Kinds, icons, pictures, action buttons and a hairline timer. Up to four stack in the corner, newest closest.</p></div>
+        <div class="feature"><span class="feature__icon"><i data-icon="save"></i></span><h3>Saved settings</h3><p>Give any element a <code>Flag</code>. Values are written as JSON and restored on the next run, callbacks included.</p></div>
+        <div class="feature"><span class="feature__icon"><i data-icon="palette"></i></span><h3>Themes, live</h3><p>Five palettes plus <code>Lyra.AddTheme</code>. <code>Window:SetTheme</code> repaints every instance without rebuilding.</p></div>
+        <div class="feature"><span class="feature__icon"><i data-icon="phone"></i></span><h3>Made for phones too</h3><p>Touch drag, automatic scale on small screens, captions nudged up for legibility, buttons that keep only their icon when space runs out.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLAYGROUND ----------------------------------------------------------- -->
+  <section class="section section--alt" id="playground" aria-labelledby="play-title">
+    <div class="wrap">
+      <div class="section__head">
+        <span class="section__kicker">Playground</span>
+        <h2 id="play-title">Drag the corner. Close it. Bring it back.</h2>
+        <p>A browser replica of the window, close enough to get a feel for it. The same layout rules run here as in Roblox, so you can watch the rail turn into icons and then into a drawer.</p>
+      </div>
+      <div class="play__bar">
+        <div class="presets" role="group" aria-label="Window size">
+          <button type="button" data-preset="820x560" aria-pressed="true"><i data-icon="maximize"></i>Desktop <small>820×560</small></button>
+          <button type="button" data-preset="640x540" aria-pressed="false"><i data-icon="layers"></i>Tablet <small>640×540</small></button>
+          <button type="button" data-preset="380x560" aria-pressed="false"><i data-icon="phone"></i>Phone <small>380×560</small></button>
+        </div>
+        <p class="play__hint"><span><span class="kbd">RightControl</span> shows or hides</span><span><span class="kbd">Esc</span> ×3 reopens</span></p>
+      </div>
+      <div class="stage" id="stage"></div>
+      <form class="chatbar" id="chatbar" autocomplete="off">
+        <i data-icon="message"></i>
+        <label class="sr-only" for="chat-input">Chat</label>
+        <input id="chat-input" type="text" placeholder="Chat: type /lyra to reopen the window, or /hello">
+        <button class="btn btn--ghost" type="submit">Send</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- COMPONENTS ----------------------------------------------------------- -->
+  <section class="section" id="components" aria-labelledby="comp-title">
+    <div class="wrap">
+      <div class="section__head">
+        <span class="section__kicker">Components</span>
+        <h2 id="comp-title">29 elements, one style.</h2>
+        <p>Each tab, group and column takes the same methods. Every element with a value has <code>Set</code> and <code>Get</code>, and a <code>Flag</code> saves it.</p>
+      </div>
+      <div class="gallery" id="gallery">
+        <article class="comp">
+          <div class="comp__demo"><div class="lw-card lw-ctrl"><div class="lw-ctrl__text"><b>Auto collect</b><span>Collects drops nearby.</span></div><button class="lw-switch" type="button" role="switch" aria-checked="true" aria-label="Auto collect"></button></div></div>
+          <div class="comp__body"><h3>Toggle <code>Tab:Toggle</code></h3><p>A switch on a settings card. The description wraps under the title.</p></div>
+          <details><summary><i data-icon="chevron-right"></i>Code</summary><div class="code"><pre><code class="lua">Tab:Toggle({
+    Title = "Auto collect",
+    Description = "Collects drops nearby.",
+    Flag = "AutoCollect",
+    Callback = function(on) print(on) end,
+})</code></pre></div></details>
+        </article>
+        <article class="comp">
+          <div class="comp__demo"><div class="lw-card lw-ctrl"><div class="lw-ctrl__text"><b>Field of view</b><span>Drag or tap the track.</span></div><div class="lw-slider" data-min="50" data-max="110" data-value="70" data-suffix="°"><output>70°</output><div class="lw-track"><div class="lw-fill"></div><div class="lw-knob"></div></div></div></div></div>
+          <div class="comp__body"><h3>Slider <code>Tab:Slider</code></h3><p>Min, Max and Step, with a suffix or your own format.</p></div>
+          <details><summary><i data-icon="chevron-right"></i>Code</summary><div class="code"><pre><code class="lua">Tab:Slider({
+    Title = "Field of view",
+    Min = 50, Max = 110, Step = 1, Default = 70,
+    Suffix = "°", Flag = "FOV",
+    Callback = function(v) workspace.CurrentCamera.FieldOfView = v end,
+})</code></pre></div></details>
+        </article>
+        <article class="comp">
+          <div class="comp__demo"><div class="lw-card lw-ctrl"><div class="lw-ctrl__text"><b>Round length</b><span>Steps through a list.</span></div><div class="lw-stepper" data-values="30,60,90,120,180,300" data-value="60"><button class="lw-btn" type="button" aria-label="Less"><i data-icon="minus"></i></button><output>1 min</output><button class="lw-btn" type="button" aria-label="More"><i data-icon="plus"></i></button></div></div></div>
+          <div class="comp__body"><h3>Stepper <code>Tab:Stepper</code></h3><p>Minus, value, plus. Values as a list, or Min/Max/Step.</p></div>
+          <details><summary><i data-icon="chevron-right"></i>Code</summary><div class="code"><pre><code class="lua">Tab:Stepper({
+    Title = "Round length",
+    Values = {30, 60, 90, 120, 180, 300},
+    Default = 60,
+    Format = function(s) return s .. " s" end,
+})</code></pre></div></details>
+        </article>
+        <article class="comp">
+          <div class="comp__demo"><div class="lw-card lw-ctrl"><div class="lw-ctrl__text"><b>Quality</b><span>Floats above the window.</span></div><button class="lw-drop" type="button" aria-expanded="false" data-options="Low,Medium,High,Ultra" data-value="High"><span>High</span><i data-icon="chevron-down"></i></button></div></div>
+          <div class="comp__body"><h3>Dropdown <code>Tab:Dropdown</code></h3><p>The list floats above the window, so no scrolling page clips it.</p></div>
+          <details><summary><i data-icon="chevron-right"></i>Code</summary><div class="code"><pre><code class="lua">Tab:Dropdown({
+    Title = "Quality",
+    Options = {"Low", "Medium", "High", "Ultra"},
+    Default = "High", Flag = "Quality",
+})</code></pre></div></details>
+        </article>
+        <article class="comp">
+          <div class="comp__demo"><label class="lw-input"><i data-icon="search"></i><input type="text" id="gallery-input" placeholder="Search players"><button class="lw-btn" type="button" aria-label="Search"><i data-icon="arrow"></i></button></label></div>
+          <div class="comp__body"><h3>Input <code>Tab:Input</code></h3><p>Callback on Enter or blur, Changed while typing, numeric filter and max length.</p></div>
+          <details><summary><i data-icon="chevron-right"></i>Code</summary><div class="code"><pre><code class="lua">Tab:Input({
+    Placeholder = "Search players",
+    Button = true,
+    Changed = function(text) render(text) end,
+    Callback = function(text, enter) end,
+})</code></pre></div></details>
+        </article>
+        <article class="comp">
+          <div class="comp__demo"><div class="lw-chips" role="group" aria-label="Filter"><button class="lw-chip" type="button" aria-pressed="true">All</button><button class="lw-chip" type="button" aria-pressed="false">Hats</button><button class="lw-chip" type="button" aria-pressed="false">Faces</button><button class="lw-chip" type="button" aria-pressed="false">Effects</button></div><div class="lw-row3" style="--n:2"><button class="lw-btn lw-btn--sel" type="button" data-seg><i data-icon="star"></i>Favorites</button><button class="lw-btn" type="button" data-seg><i data-icon="history"></i>Recent</button></div></div>
+          <div class="comp__body"><h3>Chips &amp; segmented <code>Tab:Chips</code></h3><p>Pill filters that scroll sideways, and buttons that act as tabs inside a page.</p></div>
+          <details><summary><i data-icon="chevron-right"></i>Code</summary><div class="code"><pre><code class="lua">Tab:Chips({Options = {"All", "Hats", "Faces", "Effects"}, Callback = fill})
+Tab:Segmented({Options = {
+    {Label = "Favorites", Icon = "star", Value = "fav"},
+    {Label = "Recent", Icon = "history", Value = "recent"},
+}})</code></pre></div></details>
+        </article>
+        <article class="comp">
+          <div class="comp__demo"><div class="lw-card lw-row is-current"><span class="lw-thumb">V</span><div class="lw-row__text"><b>Vega</b><span>@vega · in your server</span></div><button class="lw-btn lw-btn--primary" type="button">Wave</button><button class="lw-btn lw-btn--icon" type="button" aria-label="Favorite"><i data-icon="star"></i></button></div></div>
+          <div class="comp__body"><h3>Rows &amp; lists <code>Tab:List</code></h3><p>Picture, title, subtitle and buttons. Reorderable lists move rows by drag.</p></div>
+          <details><summary><i data-icon="chevron-right"></i>Code</summary><div class="code"><pre><code class="lua">local list = Tab:List({Reorderable = true})
+list:Add({
+    Title = "Vega", Subtitle = "@vega",
+    Image = "rbxthumb://type=AvatarHeadShot&amp;id=1&amp;w=150&amp;h=150",
+    Buttons = {{Title = "Wave", Primary = true, Callback = wave}},
+})</code></pre></div></details>
+        </article>
+        <article class="comp">
+          <div class="comp__demo"><div class="lw-gridc" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="lw-card lw-item"><div class="lw-item__pic"><span class="lw-tag">NEW</span><span class="lw-check"><i data-icon="check"></i></span><i data-icon="star"></i></div><b>Starlight Crown</b><small>Hats · 250</small><button class="lw-btn lw-btn--primary" type="button" data-buy>Buy</button></div><div class="lw-card lw-item is-owned"><div class="lw-item__pic"><span class="lw-check"><i data-icon="check"></i></span><i data-icon="eye-off"></i></div><b>Moon Visor</b><small>Faces · 120</small><button class="lw-btn" type="button">Equip</button></div></div></div>
+          <div class="comp__body"><h3>Grid <code>Tab:Grid</code></h3><p>Picture cards in whole-pixel columns: two on phones, up to six on wide windows.</p></div>
+          <details><summary><i data-icon="chevron-right"></i>Code</summary><div class="code"><pre><code class="lua">local grid = Tab:Grid({MinWidth = 150})
+grid:Add({
+    Title = "Starlight Crown", Caption = "Hats · 250",
+    Image = "rbxassetid://123", Tag = "NEW",
+    Button = {Title = "Buy", Callback = function(item, card) card:SetChecked(true) end},
+})</code></pre></div></details>
+        </article>
+        <article class="comp">
+          <div class="comp__demo" style="min-height:170px"><div class="lw-row3" style="--n:2"><button class="lw-btn lw-btn--primary" type="button" data-toast="success"><i data-icon="bell"></i>Success</button><button class="lw-btn" type="button" data-toast="warning"><i data-icon="alert"></i>Warning</button></div><div class="lw-toasts" style="position:absolute"></div></div>
+          <div class="comp__body"><h3>Toasts <code>Window:Notify</code></h3><p>Info, success, warning and error, with an optional action button.</p></div>
+          <details><summary><i data-icon="chevron-right"></i>Code</summary><div class="code"><pre><code class="lua">Window:Notify({
+    Title = "Saved", Text = "Your config was saved.",
+    Kind = "success", Icon = "save", Duration = 4,
+    Action = {Text = "Open", Callback = open},
+})</code></pre></div></details>
+        </article>
+        <article class="comp">
+          <div class="comp__demo" style="min-height:190px"><button class="lw-btn" type="button" data-confirm style="justify-self:start"><i data-icon="trash"></i>Clear list</button><div class="lw-modal"><div class="lw-modal__card"><b>Clear the list?</b><p>Every item is removed. Closes on its own in <span data-count>10</span> s.</p><div class="lw-row3"><button class="lw-btn" type="button" data-close>Keep</button><button class="lw-btn lw-btn--primary" type="button" data-close>Clear</button></div></div></div></div>
+          <div class="comp__body"><h3>Confirm <code>Window:Confirm</code></h3><p>A dialog inside the window, with an optional countdown that cancels for you.</p></div>
+          <details><summary><i data-icon="chevron-right"></i>Code</summary><div class="code"><pre><code class="lua">Window:Confirm({
+    Title = "Clear the list?",
+    Text = "Every item is removed.",
+    Confirm = "Clear", Seconds = 10,
+    Callback = function() list:Clear() end,
+})</code></pre></div></details>
+        </article>
+        <article class="comp">
+          <div class="comp__demo"><div class="lw-card lw-ctrl"><div class="lw-ctrl__text"><b>Quick action</b><span>Tap, then press a key.</span></div><button class="lw-btn lw-key" type="button" data-key>G</button></div></div>
+          <div class="comp__body"><h3>Keybind <code>Tab:Keybind</code></h3><p>Rebind by pressing a key. Esc cancels; Callback runs when the key is pressed in game.</p></div>
+          <details><summary><i data-icon="chevron-right"></i>Code</summary><div class="code"><pre><code class="lua">Tab:Keybind({
+    Title = "Quick action",
+    Default = Enum.KeyCode.G, Flag = "QuickKey",
+    Callback = function() print("pressed") end,
+})</code></pre></div></details>
+        </article>
+        <article class="comp">
+          <div class="comp__demo"><div class="lw-card lw-strip" style="height:auto"><div class="lw-strip__head"><i data-icon="history"></i><b>Activity</b><span>tap to go back</span></div><div class="lw-tiles"><span class="lw-tile"><i><i data-icon="star"></i></i><small>Step 1</small></span><span class="lw-tile"><i><i data-icon="star"></i></i><small>Step 2</small></span><span class="lw-tile is-now"><i><i data-icon="star"></i></i><small>Now</small></span></div></div></div>
+          <div class="comp__body"><h3>Strip <code>Tab:Strip</code></h3><p>A sideways timeline of thumbnails, with buttons underneath when you need them.</p></div>
+          <details><summary><i data-icon="chevron-right"></i>Code</summary><div class="code"><pre><code class="lua">local strip = Tab:Strip({Title = "Activity", Icon = "history"})
+strip:Set({
+    {Label = "Step 1", Icon = "star", Callback = goBack},
+    {Label = "Now", Icon = "star", Current = true},
+})</code></pre></div></details>
+        </article>
+      </div>
+      <p class="section__head" style="margin:28px 0 0"><span>Also: Section, Paragraph, Label, Divider, Button, ButtonRow, Action, TextArea, Group, Columns, Collapsible, Guide, Empty, Preview (3D), Link, Profile and Image. <a href="docs.html#elements">See them all in the docs</a>.</span></p>
+    </div>
+  </section>
+
+  <!-- THEMES --------------------------------------------------------------- -->
+  <section class="section section--alt" id="themes" aria-labelledby="themes-title">
+    <img class="drift" src="assets/img/moon.svg" alt="" aria-hidden="true" style="left:-60px;top:30px;width:150px;opacity:.18" data-scroll="0.2">
+    <div class="wrap">
+      <div class="section__head">
+        <span class="section__kicker">Themes</span>
+        <h2 id="themes-title">Five skies to choose from.</h2>
+        <p>Pick one below: this page, the hero and the playground all repaint, the same way <code>Window:SetTheme</code> repaints a live window in Roblox.</p>
+      </div>
+      <div class="themes" id="themes-list"></div>
+      <div class="themes__code">
+        <div class="code"><div class="code__bar">Switch at runtime</div><pre><code class="lua">Window:SetTheme("Rose")
+
+-- or start with it
+Lyra:CreateWindow({Title = "My Hub", Theme = "Midnight"})</code></pre></div>
+        <div class="code"><div class="code__bar">Your own palette</div><pre><code class="lua">Lyra.AddTheme("Aurora", {
+    Base = Color3.fromRGB(12, 22, 26),
+    Accent = Color3.fromRGB(120, 230, 210),
+    -- missing keys fall back to Lavender
+})</code></pre></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUICK START ---------------------------------------------------------- -->
+  <section class="section" id="start" aria-labelledby="start-title">
+    <div class="wrap">
+      <div class="section__head">
+        <span class="section__kicker">Get started</span>
+        <h2 id="start-title">From zero to a hub in three steps.</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step__text"><h3>Load the library</h3><p>One line in your executor. The library returns the <code>Lyra</code> table.</p></div>
+          <div class="code"><div class="code__bar">Lua <button class="copy" type="button" data-copy="#step-1"><i data-icon="copy"></i>Copy</button></div><pre><code class="lua" id="step-1">local Lyra = loadstring(game:HttpGet("https://raw.githubusercontent.com/lyraEz/Library-UI/main/src/Lyra.lua"))()</code></pre></div>
+        </div>
+        <div class="step">
+          <div class="step__text"><h3>Create a window</h3><p>Title, subtitle and how players bring it back. Everything else has a sensible default.</p></div>
+          <div class="code"><div class="code__bar">Lua <button class="copy" type="button" data-copy="#step-2"><i data-icon="copy"></i>Copy</button></div><pre><code class="lua" id="step-2">local Window = Lyra:CreateWindow({
+    Title = "My Hub",
+    Subtitle = "by you  ·  v1.0",
+    Keybind = Enum.KeyCode.RightControl,
+    ChatCommand = "hub", -- /hub or /e hub reopens it
+})</code></pre></div>
+        </div>
+        <div class="step">
+          <div class="step__text"><h3>Add tabs and elements</h3><p>Give values a <code>Flag</code> and they come back next run. <code>SettingsTab</code> adds size, theme and reopen options for free.</p></div>
+          <div class="code"><div class="code__bar">Lua <button class="copy" type="button" data-copy="#step-3"><i data-icon="copy"></i>Copy</button></div><pre><code class="lua" id="step-3">local Main = Window:Tab({Title = "Main", Icon = "star"})
+Main:Section("Main", "Your features go here.")
+Main:Toggle({Title = "Enabled", Flag = "Enabled", Callback = function(on)
+    print("Enabled:", on)
+end})
+Main:Slider({Title = "Power", Min = 0, Max = 100, Default = 50, Suffix = "%", Flag = "Power"})
+
+Window:SettingsTab()
+Window:Notify({Title = "Loaded", Text = "Press RightControl to hide.", Kind = "success"})</code></pre></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CREATOR -------------------------------------------------------------- -->
+  <section class="section section--alt" id="creator" aria-labelledby="creator-title">
+    <div class="wrap creator">
+      <div class="section__head" style="margin:0">
+        <span class="section__kicker">Behind it</span>
+        <h2 id="creator-title">Made by lyraEz.</h2>
+        <p>Lyra UI started as the interface of Lyra Avatar Studio. Questions, ideas and showcases of what you build go to the Discord.</p>
+      </div>
+      <div class="creator__card">
+        <div class="creator__head">
+          <span class="portrait" aria-hidden="true">L</span>
+          <div><small>GITHUB PROFILE</small><b>lyraEz</b><span class="creator__handle">@lyraEz</span></div>
+        </div>
+        <p class="creator__quote">The moon reminds me that even in darkness, there's always a <b>beautiful light</b></p>
+        <div class="creator__links">
+          <a class="btn btn--primary" href="https://discord.gg/8bxXcn2Vfb" target="_blank" rel="noopener"><i data-icon="discord"></i>Join the Discord</a>
+          <a class="btn btn--ghost" href="https://github.com/lyraEz" target="_blank" rel="noopener"><i data-icon="github"></i>GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ ------------------------------------------------------------------ -->
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="section__head"><span class="section__kicker">FAQ</span><h2 id="faq-title">Questions people ask.</h2></div>
+      <div class="faq">
+        <details><summary>Is it free to use?<i data-icon="plus"></i></summary><p>Yes. Load it with the line above and build whatever you like on top of it.</p></details>
+        <details><summary>Does it work on mobile executors?<i data-icon="plus"></i></summary><p>Yes. Dragging, resizing and the drawer all take touch input, the window scales down a little on small screens and every caption is nudged up one size to stay readable.</p></details>
+        <details><summary>Do I need to upload images?<i data-icon="plus"></i></summary><p>No. The icon sheet is embedded in the file. With <code>writefile</code> and <code>getcustomasset</code> it loads as one image; without them every icon is drawn with frames.</p></details>
+        <details><summary>Where are settings saved?<i data-icon="plus"></i></summary><p>In <code>workspace/LyraUI/&lt;Window name&gt;.json</code> through your executor's <code>writefile</code>. Pass <code>ConfigFile = false</code> to turn saving off.</p></details>
+        <details><summary>Can I use it in Roblox Studio?<i data-icon="plus"></i></summary><p>Yes, require it from a LocalScript. Saving and the embedded icon sheet need executor functions, so in Studio the window runs without them and draws vector icons.</p></details>
+        <details><summary>What happens if my callback errors?<i data-icon="plus"></i></summary><p>The window keeps working. The error goes to the console and to the status line, so you see it without the hub breaking.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__row">
+      <a class="brand" href="#top"><img src="assets/img/logo.svg" alt="" width="30" height="30">Lyra UI</a>
+      <nav aria-label="Footer">
+        <a href="docs.html">Docs</a>
+        <a href="#playground">Playground</a>
+        <a href="https://github.com/lyraEz/Library-UI" target="_blank" rel="noopener">Source</a>
+        <a href="https://discord.gg/8bxXcn2Vfb" target="_blank" rel="noopener">Discord</a>
+      </nav>
+    </div>
+    <p class="footer__credit">© 2026 lyraEz. Icons: Lucide (ISC) and Simple Icons (CC0).</p>
+  </div>
+</footer>
+
+<script src="assets/js/icons.js" defer></script>
+<script src="assets/js/site.js" defer></script>
+<script src="assets/js/demo.js" defer></script>
+</body>
+</html>

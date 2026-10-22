@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" aria-hidden="true">
+  <defs>
+    <radialGradient id="moon-face" cx="38%" cy="34%" r="70%">
+      <stop offset="0" stop-color="#fbf8ff"/>
+      <stop offset=".55" stop-color="#ddd1fb"/>
+      <stop offset="1" stop-color="#9f89d8"/>
+    </radialGradient>
+    <radialGradient id="moon-crater" cx="40%" cy="40%" r="60%">
+      <stop offset="0" stop-color="#8f79c7" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#bca7f6" stop-opacity=".12"/>
+    </radialGradient>
+    <radialGradient id="moon-shade" cx="80%" cy="78%" r="75%">
+      <stop offset=".35" stop-color="#2a2145" stop-opacity="0"/>
+      <stop offset="1" stop-color="#2a2145" stop-opacity=".55"/>
+    </radialGradient>
+  </defs>
+  <circle cx="120" cy="120" r="96" fill="url(#moon-face)"/>
+  <circle cx="86" cy="92" r="17" fill="url(#moon-crater)"/>
+  <circle cx="146" cy="74" r="9" fill="url(#moon-crater)"/>
+  <circle cx="150" cy="140" r="22" fill="url(#moon-crater)"/>
+  <circle cx="98" cy="152" r="10" fill="url(#moon-crater)"/>
+  <circle cx="118" cy="118" r="5" fill="url(#moon-crater)"/>
+  <circle cx="70" cy="130" r="6" fill="url(#moon-crater)"/>
+  <circle cx="120" cy="120" r="96" fill="url(#moon-shade)"/>
+</svg>
