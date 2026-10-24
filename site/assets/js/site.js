@@ -208,7 +208,9 @@
 
     var heroFrame = document.getElementById("hero-frame");
     if (heroFrame && "ResizeObserver" in window) {
-      new ResizeObserver(function () { heroFrame.style.setProperty("--hero-scale", (heroFrame.clientWidth / 820).toFixed(4)); }).observe(heroFrame);
+      // Set on the tilt wrapper so the window, its toast and its floating button all share the scale.
+      var scaleHost = document.getElementById("hero-tilt") || heroFrame;
+      new ResizeObserver(function () { scaleHost.style.setProperty("--hero-scale", (heroFrame.clientWidth / 820).toFixed(4)); }).observe(heroFrame);
     }
 
     if (canvas) {

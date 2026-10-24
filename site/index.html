@@ -104,7 +104,7 @@
           </div>
           <div class="lw-toast hero__toast" style="--k: var(--w-green)" aria-hidden="true">
             <span class="lw-toast__badge"><i data-icon="check"></i></span>
-            <div><b>Config saved</b><span>Restored on your next run.</span></div>
+            <div class="lw-toast__text"><b>Config saved</b><span>Restored on your next run.</span></div>
             <span class="lw-toast__bar" style="animation-duration: 6s; animation-iteration-count: infinite"></span>
           </div>
           <span class="lw-orb hero__orb" aria-hidden="true">LS</span>
@@ -261,7 +261,7 @@ grid:Add({
 })</code></pre></div></details>
         </article>
         <article class="comp">
-          <div class="comp__demo" style="min-height:170px"><div class="lw-row3" style="--n:2"><button class="lw-btn lw-btn--primary" type="button" data-toast="success"><i data-icon="bell"></i>Success</button><button class="lw-btn" type="button" data-toast="warning"><i data-icon="alert"></i>Warning</button></div><div class="lw-toasts" style="position:absolute"></div></div>
+          <div class="comp__demo"><div class="lw-row3" style="--n:2"><button class="lw-btn lw-btn--primary" type="button" data-toast="success"><i data-icon="bell"></i>Success</button><button class="lw-btn" type="button" data-toast="warning"><i data-icon="alert"></i>Warning</button></div><div class="lw-toasts comp__toasts" aria-live="polite"></div></div>
           <div class="comp__body"><h3>Toasts <code>Window:Notify</code></h3><p>Info, success, warning and error, with an optional action button.</p></div>
           <details><summary><i data-icon="chevron-right"></i>Code</summary><div class="code"><pre><code class="lua">Window:Notify({
     Title = "Saved", Text = "Your config was saved.",

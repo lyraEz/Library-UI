@@ -265,8 +265,11 @@ p { margin: 0; }
 
 /* components gallery */
 .gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.comp { display: grid; grid-template-rows: auto 1fr auto; min-width: 0; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); overflow: hidden; }
+.comp { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; min-width: 0; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); overflow: hidden; }
 .comp__demo { padding: 18px; min-height: 150px; display: grid; align-content: center; gap: 10px; background: radial-gradient(400px 200px at 0% 0%, rgb(var(--w-accent-dark) / 0.18), transparent 70%), rgb(var(--w-base) / 0.9); border-bottom: 1px solid var(--line); position: relative; }
+/* Grid items size to their content by default; without this an opened code block widens the card past its edge. */
+.comp > * { min-width: 0; }
+.lw-toasts.comp__toasts { position: relative; right: auto; bottom: auto; z-index: 1; width: 100%; min-height: 124px; flex-direction: column; justify-content: flex-start; }
 .comp__body { padding: 16px 18px 6px; display: grid; gap: 4px; align-content: start; }
 .comp__body h3 { font-size: 1rem; font-weight: 700; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .comp__body h3 code { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 500; color: var(--accent); }
@@ -277,7 +280,7 @@ p { margin: 0; }
 .comp summary .ic { transition: transform 0.2s ease; }
 .comp details[open] summary .ic { transform: rotate(90deg); }
 .comp details .code { margin-top: 10px; }
-.comp details pre { font-size: 0.78rem; padding: 12px 14px; }
+.comp details pre { font-size: 0.78rem; padding: 12px 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
 @media (max-width: 1000px) { .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .gallery { grid-template-columns: minmax(0, 1fr); } }
 
@@ -540,8 +543,9 @@ p { margin: 0; }
 @keyframes lw-toast-in { from { opacity: 0; transform: translateX(24px); } }
 .lw-toast__badge { width: 24px; height: 24px; border-radius: 50%; flex: none; display: grid; place-items: center; background: rgb(var(--k) / 0.18); border: 1px solid rgb(var(--k) / 0.45); color: rgb(var(--k)); align-self: center; }
 .lw-toast__badge .ic { width: 15px; height: 15px; }
-.lw-toast b { display: block; font-size: 13px; }
-.lw-toast span { display: block; font-size: 12px; color: rgb(var(--w-muted)); }
+.lw-toast__text { flex: 1; min-width: 0; display: grid; align-content: center; gap: 1px; }
+.lw-toast__text b { font-size: 13px; }
+.lw-toast__text span { font-size: 12px; color: rgb(var(--w-muted)); }
 .lw-toast__bar { position: absolute; left: 12px; right: 12px; bottom: 1px; height: 1px; background: rgb(var(--k) / 0.75); transform-origin: left center; animation: lw-bar linear forwards; }
 @keyframes lw-bar { to { transform: scaleX(0); } }
 
@@ -549,8 +553,11 @@ p { margin: 0; }
 .hero__frame { position: relative; width: 100%; aspect-ratio: 820 / 560; max-width: 100%; }
 .hero__frame .lw { transform-origin: 0 0; transform: scale(var(--hero-scale, 0.62)); }
 .hero__frame .lw-content { overflow: hidden; }
-.hero__toast { position: absolute; left: -14px; bottom: 9%; width: min(250px, 70%); z-index: 3; animation: none; box-shadow: 0 24px 50px rgb(0 0 0 / 0.45); cursor: default; }
-@media (max-width: 520px) { .hero__toast { left: 4px; bottom: 6%; } .hero__orb { right: 2px; } }
+/* The toast and the floating button shrink with the window, so on phones they stay in proportion. */
+.hero__toast { position: absolute; left: -14px; bottom: 9%; width: 250px; z-index: 3; animation: none; box-shadow: 0 24px 50px rgb(0 0 0 / 0.45); cursor: default;
+  transform-origin: 0 100%; transform: scale(min(1, calc(var(--hero-scale, 0.62) * 1.45))); }
+.hero__orb { transform-origin: 100% 100%; transform: scale(min(1, calc(var(--hero-scale, 0.62) * 1.5))); }
+@media (max-width: 520px) { .hero__toast { left: 6px; bottom: 7%; } .hero__orb { right: 4px; bottom: -16px; } }
 
 /* ================================================================ docs */
 .docs { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); padding-block: 40px 80px; }
@@ -589,6 +596,12 @@ p { margin: 0; }
   .docs { grid-template-columns: minmax(0, 1fr); }
   .docs__side { position: static; max-height: none; }
   .docs__nav { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+}
+
+/* Phones: code wraps inside its box instead of running off to the side. */
+@media (max-width: 640px) {
+  .code pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .doc__sig { white-space: normal; overflow-wrap: anywhere; }
 }
 
 @media (prefers-reduced-motion: reduce) {

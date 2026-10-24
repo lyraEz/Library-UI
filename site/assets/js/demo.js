@@ -31,12 +31,12 @@
   function toast(container, spec) {
     var kind = KIND[spec.kind] ? spec.kind : "info";
     var duration = spec.duration == null ? 4 : spec.duration;
-    var node = el('<div class="lw-toast" role="status"><span class="lw-toast__badge"><i data-icon="' + (spec.icon || GLYPH[kind]) + '"></i></span><div><b></b><span></span></div>' +
+    var node = el('<div class="lw-toast" role="status"><span class="lw-toast__badge"><i data-icon="' + (spec.icon || GLYPH[kind]) + '"></i></span><div class="lw-toast__text"><b></b><span></span></div>' +
       (duration > 0 ? '<span class="lw-toast__bar"></span>' : "") + "</div>");
     node.style.setProperty("--k", KIND[kind]);
-    $("b", node).textContent = spec.title;
-    $("div > span", node).textContent = spec.text || "";
-    if (!spec.text) $("div > span", node).remove();
+    $(".lw-toast__text b", node).textContent = spec.title;
+    $(".lw-toast__text span", node).textContent = spec.text || "";
+    if (!spec.text) $(".lw-toast__text span", node).remove();
     var bar = $(".lw-toast__bar", node);
     if (bar) bar.style.animationDuration = duration + "s";
     var closed = false;
@@ -48,8 +48,9 @@
     }
     node.addEventListener("click", dismiss);
     container.appendChild(node);
+    // The oldest toast leaves when a new one goes past the limit (4 in a window, fewer in a small card).
     var live = $$(".lw-toast:not(.is-out)", container);
-    if (live.length > 4) live[0].click();
+    if (live.length > (spec.max || 4)) live[0].click();
     if (duration > 0) setTimeout(dismiss, duration * 1000);
     return dismiss;
   }
@@ -230,8 +231,8 @@
       $$("[data-toast]", demo).forEach(function (button) {
         button.addEventListener("click", function () {
           var kind = button.getAttribute("data-toast");
-          toast(toasts, kind === "success" ? { kind: "success", title: "Config saved", text: "Restored on your next run.", icon: "save" }
-            : { kind: "warning", title: "Clipboard unavailable", text: "Select the link and copy it.", icon: "alert" });
+          toast(toasts, kind === "success" ? { kind: "success", title: "Config saved", text: "Restored on your next run.", icon: "save", max: 2 }
+            : { kind: "warning", title: "Clipboard unavailable", text: "Select the link and copy it.", icon: "alert", max: 2 });
         });
       });
       var confirm = $("[data-confirm]", demo);
