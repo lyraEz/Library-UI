@@ -10,7 +10,7 @@ A native Roblox interface library: the window, navigation, controls and notifica
 - **Toasts**, a **confirm dialog** with countdown and a **status line**.
 - **29 elements**: toggles, sliders, steppers, dropdowns, inputs, keybinds, chips, lists with drag-to-reorder, picture grids, a 3D model preview and more.
 - **Saved settings**: give an element a `Flag` and its value is restored on the next run.
-- **Five themes**, switchable live, and `Lyra.AddTheme` for your own.
+- **Five themes**, switchable live, and `Lyra.AddTheme` for your own. 
 
 ## Install
 
