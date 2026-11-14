@@ -667,15 +667,18 @@ end
 
 -- Quality caps: Engine.Quality picks a row, Engine.Load (0.35-1) shrinks it when auto quality kicks in.
 local QUALITY = {
-    Low = {Rays = 4, Surfaces = 1, Parts = 160, Pixels = 6, Canvas = 512, Rate = 20, Cards = 24, Lights = 2, Lamps = 2, Highlights = 6},
-    Balanced = {Rays = 6, Surfaces = 2, Parts = 350, Pixels = 9, Canvas = 768, Rate = 30, Cards = 50, Lights = 4, Lamps = 4, Highlights = 10},
-    High = {Rays = 10, Surfaces = 4, Parts = 700, Pixels = 13, Canvas = 1024, Rate = 60, Cards = 100, Lights = 6, Lamps = 6, Highlights = 16},
-    Ultra = {Rays = 14, Surfaces = 6, Parts = 1200, Pixels = 18, Canvas = 1536, Rate = 60, Cards = 180, Lights = 8, Lamps = 8, Highlights = 24},
+    Low = {Rays = 4, Surfaces = 1, Parts = 220, Pixels = 6, Canvas = 512, Rate = 20, Cards = 24, Lights = 2, Lamps = 2, Highlights = 6},
+    Balanced = {Rays = 6, Surfaces = 2, Parts = 450, Pixels = 9, Canvas = 768, Rate = 30, Cards = 50, Lights = 4, Lamps = 4, Highlights = 10},
+    High = {Rays = 10, Surfaces = 4, Parts = 800, Pixels = 13, Canvas = 1024, Rate = 60, Cards = 100, Lights = 6, Lamps = 6, Highlights = 16},
+    Ultra = {Rays = 14, Surfaces = 6, Parts = 1300, Pixels = 18, Canvas = 1536, Rate = 60, Cards = 180, Lights = 8, Lamps = 8, Highlights = 24},
 }
 local function cap(key)
     local row = QUALITY[Engine and Engine.Quality or "Balanced"] or QUALITY.Balanced
     local value = row[key]
-    if Engine and Engine.Load < 1 and key ~= "Pixels" then value = math.max(1, math.floor(value * Engine.Load + 0.5)) end
+    if Engine and Engine.Load < 1 and key ~= "Pixels" then
+        -- Auto quality never empties the reflections: at least 120 objects stay reflected.
+        value = math.max(key == "Parts" and math.min(value, 120) or 1, math.floor(value * Engine.Load + 0.5))
+    end
     return value
 end
 
@@ -2491,6 +2494,10 @@ local function characterShell(model)
         humanoid.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
         if source then humanoid.RigType = source.RigType end
     end)
+    -- A copy never walks, falls or dies: no state machine, no neck rule, no joints to break.
+    for property, value in pairs({EvaluateStateMachine = false, RequiresNeck = false, BreakJointsOnDeath = false}) do
+        safeSet(humanoid, property, value)
+    end
     humanoid.Parent = shell
     for _, child in ipairs(model:GetChildren()) do
         if child:IsA("Clothing") or child:IsA("ShirtGraphic") or child:IsA("BodyColors") then
@@ -2503,26 +2510,29 @@ end
 
 local SSR = defineEffect({
     Id = "ssr", Title = "SSR", Icon = "refresh-cw", Default = true,
-    Description = "Real-time reflections on floors, walls and glossy surfaces.",
-    Notes = {"Reflections of players, your own character and the world around you, updated every frame.",
-        "Rays across the screen find the biggest reflective surfaces in view (floor tiles on the same level are joined into one). Each gets a mirror: a copy of the nearby scene, flipped across the surface, seen from your camera.",
-        "How strong a reflection is depends on the material (glass, marble, metal and polished plastic reflect most), the viewing angle (Fresnel) and how bright the surface is.",
-        "Copies use simple lighting, and meshes keep their own handedness, so text and asymmetric meshes are not flipped. Looking very low along a long floor, the far part may not reflect: Roblox cameras stop at 120° of view."},
+    Description = "Real-time reflections on floors, walls, water and glossy surfaces.",
+    Notes = {"Floors: everything near you (players, you, NPCs and the map) is copied and mirrored under the floor, and the floor turns partly see-through on your screen only. The reflection is real 3D: it reaches the horizon, follows every move and is lit by the game's own lights, so neon and lamps glow in it too.",
+        "Strength sets how much the floor shows the reflection. Fresnel makes floors seen at a low angle reflect more, Distance fade softens far floors, and Follow materials keeps grass, fabric and brick duller than marble, glass or polished plastic.",
+        "Parts right under a reflective floor are hidden while it reflects, so they do not cover the reflection. Floors that sit on terrain cannot show what is under them, so they (and terrain ground) get a mirror instead.",
+        "Walls get mirrors: a ViewportFrame on the wall showing the mirrored scene from your camera. Water uses Roblox's own water reflections, turned up.",
+        "Copies keep their own handedness, so text and asymmetric meshes are not flipped."},
     Params = {
-        {Key = "Strength", Title = "Strength", Kind = "Slider", Min = 0, Max = 100, Default = 55, Suffix = "%"},
-        {Key = "Fresnel", Title = "Fresnel", Description = "Stronger reflections at grazing angles.", Kind = "Slider", Min = 0, Max = 100, Default = 60, Suffix = "%"},
-        {Key = "Blur", Title = "Roughness", Description = "Softer, lower-resolution reflections.", Kind = "Slider", Min = 0, Max = 100, Default = 15, Suffix = "%"},
-        {Key = "Tint", Title = "Surface tint", Description = "How much the surface colour tints its reflection.", Kind = "Slider", Min = 0, Max = 100, Default = 35, Suffix = "%"},
+        {Key = "Strength", Title = "Strength", Kind = "Slider", Min = 0, Max = 100, Default = 65, Suffix = "%"},
+        {Key = "Fresnel", Title = "Fresnel", Description = "Stronger reflections when you look along the floor.", Kind = "Slider", Min = 0, Max = 100, Default = 50, Suffix = "%"},
+        {Key = "Fade", Title = "Distance fade", Description = "Far floors reflect less.", Kind = "Slider", Min = 0, Max = 100, Default = 30, Suffix = "%"},
+        {Key = "MaterialAware", Title = "Follow materials", Description = "Polished floors reflect more than grass, fabric or brick.", Kind = "Toggle", Default = true},
         {Key = "Floors", Title = "Floors", Kind = "Toggle", Default = true},
         {Key = "Walls", Title = "Walls", Kind = "Toggle", Default = true},
         {Key = "Ceilings", Title = "Ceilings", Kind = "Toggle", Default = false},
         {Key = "Water", Title = "Water", Kind = "Toggle", Default = true},
-        {Key = "GlossyOnly", Title = "Glossy materials only", Description = "Skip rough materials like grass, fabric and brick.", Kind = "Toggle", Default = false},
+        {Key = "HideBelow", Title = "Hide what is under the floor", Description = "Parts right under a reflective floor are hidden so they do not cover the reflection.", Kind = "Toggle", Default = true},
         {Key = "Players", Title = "Characters", Description = "Players, you and nearby NPCs.", Kind = "Toggle", Default = true},
         {Key = "World", Title = "World objects", Kind = "Toggle", Default = true},
-        {Key = "Surfaces", Title = "Surfaces", Description = "Most mirrors at once.", Kind = "Stepper", Min = 1, Max = 6, Default = 3},
-        {Key = "Detail", Title = "Objects per mirror", Kind = "Slider", Min = 50, Max = 1500, Step = 25, Default = 400},
-        {Key = "Range", Title = "Range", Kind = "Slider", Min = 40, Max = 400, Step = 10, Default = 160, Suffix = " studs"},
+        {Key = "Detail", Title = "Reflected objects", Kind = "Slider", Min = 50, Max = 1500, Step = 25, Default = 450},
+        {Key = "Range", Title = "Range", Kind = "Slider", Min = 40, Max = 400, Step = 10, Default = 180, Suffix = " studs"},
+        {Key = "Surfaces", Title = "Wall mirrors", Description = "Most mirrors at once (walls, terrain ground).", Kind = "Stepper", Min = 0, Max = 6, Default = 2},
+        {Key = "Blur", Title = "Mirror roughness", Description = "Softer, lower-resolution mirrors.", Kind = "Slider", Min = 0, Max = 100, Default = 15, Suffix = "%"},
+        {Key = "Tint", Title = "Mirror tint", Description = "How much a surface's colour tints its mirror.", Kind = "Slider", Min = 0, Max = 100, Default = 35, Suffix = "%"},
     },
 })
 
@@ -2536,10 +2546,32 @@ function SSR:Start()
     self.Box = OverlapParams.new()
     self.Box.FilterType = self.Overlap.FilterType
     pcall(function() self.Box.MaxParts = 400 end)
+    self.TerrainParams = RaycastParams.new()
+    self.TerrainParams.FilterType = enumItem("RaycastFilterType", "Include") or Enum.RaycastFilterType.Whitelist
+    local terrain = Workspace:FindFirstChildOfClass("Terrain")
+    self.TerrainParams.FilterDescendantsInstances = terrain and {terrain} or {}
+    self:planarReset()
+    local cfg = self
+    if terrain then
+        Props.set(terrain, "WaterReflectance", "ssr", 0, function(value)
+            if not cfg.Config.Water then return value end
+            return math.max(value, cfg.Config.Strength / 100)
+        end)
+    end
 end
 function SSR:Apply()
     -- Surfaces that a new setting rules out go away on the next selection; resolution follows at once.
     for _, mirror in pairs(self.Mirrors or {}) do mirror.Signature = nil end
+    -- Strength, Fresnel and fade are read every tenth of a second; what changes the floor's make-up rescans now.
+    local cfg = self.Config
+    local shape = table.concat({tostring(cfg.MaterialAware), tostring(cfg.HideBelow), tostring(cfg.Players), tostring(cfg.World), cfg.Range, cfg.Detail}, "|")
+    if shape ~= self.Shape then
+        self.Shape = shape
+        self.NextScanAt = 0
+        for part, saved in pairs(self.Receivers or {}) do
+            saved.Material = cfg.MaterialAware and clamp(materialLook(part.Material) / 0.42, 0.35, 1) or 1
+        end
+    end
 end
 
 -- One step of the surface scan: rays through a 9 x 7 grid on the screen plus one straight down from you.
@@ -2574,14 +2606,24 @@ function SSR:collect(hit, weight, centre)
     local part = hit.Instance
     local group
     if part:IsA("Terrain") then
-        if not (cfg.Water and hit.Material == Enum.Material.Water and hit.Normal.Y > 0.7) then return end
+        local water = hit.Material == Enum.Material.Water
+        -- Water always gets a mirror; other terrain only when the floor under you is terrain.
+        if hit.Normal.Y <= 0.7 or (water and not cfg.Water) or (not water and not (cfg.Floors and self.GroundMirror)) then return end
         local level = math.floor(hit.Position.Y * 4 + 0.5) / 4
-        local key = "water@" .. level
+        local key = (water and "water@" or "ground@") .. level
         group = self.Hits[key]
         if not group then
-            local reflectivity, roughness = materialLook(Enum.Material.Water)
+            local reflectivity, roughness = materialLook(water and Enum.Material.Water or hit.Material)
+            local color = Color3.fromRGB(12, 84, 92)
+            if water then
+                local terrain = Workspace:FindFirstChildOfClass("Terrain")
+                if terrain then color = safeGet(terrain, "WaterColor") or color end
+            else
+                color = Scene.surfaceColor(hit)
+                reflectivity = cfg.MaterialAware and math.max(reflectivity, 0.2) or 0.45
+            end
             group = {Key = key, Water = true, Normal = UP, Point = Vector3.new(0, level, 0), A = Vector3.new(1, 0, 0), B = Vector3.new(0, 0, 1),
-                Weight = 0, Reflectivity = reflectivity, Roughness = roughness, Metal = false, Color = Workspace.Terrain.WaterColor, Faces = {}}
+                Weight = 0, Reflectivity = reflectivity, Roughness = roughness, Metal = false, Color = color, Faces = {}}
             self.Hits[key] = group
         end
     else
@@ -2590,8 +2632,10 @@ function SSR:collect(hit, weight, centre)
         if not face then return end
         local kind = surfaceKind(face.Normal)
         if not kind or not cfg[kind] then return end
+        -- Floors are planar reflections; they only get a mirror when terrain under them blocks that.
+        if kind == "Floors" and not self.GroundMirror then return end
         local reflectivity, roughness, metal = materialLook(part.Material)
-        if cfg.GlossyOnly and reflectivity < 0.3 then return end
+        if not cfg.MaterialAware then reflectivity = math.max(reflectivity, 0.45) end
         if reflectivity <= 0.01 then return end
         local key = planeKey(face.Normal, face.Center)
         group = self.Hits[key]
@@ -2936,7 +2980,7 @@ function SSR:shade(mirror, now, dt)
     local base = reflectivity * (1 - 0.5 * fresnel)
     local edge = math.min(1, reflectivity * (1 + 1.4 * fresnel) + 0.25 * fresnel)
     local color = group.Color or WHITE
-    local opacity = cfg.Strength / 100 * 1.5 * lerp(base, edge, grazing) * (1 - 0.45 * luminance(color))
+    local opacity = cfg.Strength / 100 * 1.8 * lerp(base, edge, grazing) * (1 - 0.35 * luminance(color))
     local target = mirror.Dying and 0 or 1
     mirror.Fade = approach(mirror.Fade, target, 6, dt)
     mirror.View.ImageTransparency = 1 - clamp(opacity, 0, 0.92) * mirror.Fade
@@ -2951,16 +2995,446 @@ function SSR:shade(mirror, now, dt)
     end
 end
 
+-- -----------------------------------------------------------------------------
+-- Planar floor reflections: real mirrored copies under the floor, seen through it.
+-- The floor parts around you get a local transparency (only on this screen, through
+-- LocalTransparencyModifier), the parts right under them are hidden, and copies of everything
+-- above the floor are mirrored below it every frame. The game's renderer does the rest: depth,
+-- lighting, neon glow and distance all come out right with no projection tricks.
+-- -----------------------------------------------------------------------------
+local PLANAR_SKIP = {WedgePart = true, CornerWedgePart = true, TrussPart = true}
+local function verticalAxis(cf)
+    if math.abs(cf.UpVector.Y) > 0.995 then return 2 end
+    if math.abs(cf.RightVector.Y) > 0.995 then return 1 end
+    if math.abs(cf.LookVector.Y) > 0.995 then return 3 end
+    return nil
+end
+-- Half of a part's height in world space, from its rotation.
+local function halfHeight(cf, size)
+    local _, _, _, _, _, _, r10, r11, r12 = cf:GetComponents()
+    return (math.abs(r10) * size.X + math.abs(r11) * size.Y + math.abs(r12) * size.Z) / 2
+end
+local function halfFootprint(cf, size)
+    local _, _, _, r00, r01, r02, _, _, _, r20, r21, r22 = cf:GetComponents()
+    return (math.abs(r00) * size.X + math.abs(r01) * size.Y + math.abs(r02) * size.Z) / 2,
+        (math.abs(r20) * size.X + math.abs(r21) * size.Y + math.abs(r22) * size.Z) / 2
+end
+local function flatTopped(part, cf)
+    if PLANAR_SKIP[part.ClassName] then return false end
+    local axis = verticalAxis(cf)
+    if not axis then return false end
+    if part:IsA("Part") then
+        if part.Shape == Enum.PartType.Block then return true end
+        return part.Shape == Enum.PartType.Cylinder and axis == 1
+    end
+    return part:IsA("MeshPart") or part:IsA("PartOperation")
+end
+local function trimmable(part, cf)
+    return part:IsA("Part") and part.Shape == Enum.PartType.Block and not part:FindFirstChildWhichIsA("DataModelMesh") and cf.UpVector.Y > 0.999
+end
+
+function SSR:planarReset()
+    self:planarRelease()
+    self.Plane, self.PendingY, self.PendingSince, self.MissingSince = nil, nil, 0, nil
+    self.Receivers, self.Hidden, self.Copies, self.CopyShells, self.CopyQueue = {}, {}, {}, {}, {}
+    self.CopyDynamic, self.CopyStatic, self.CopyIndex = {}, {}, 0
+    self.Job, self.NextScanAt, self.NextShade, self.GroundMirror = nil, 0, 0, false
+    self.ReceiverCount, self.CopyCount = 0, 0
+end
+-- Puts every floor and hidden part back the way it was and removes the copies.
+function SSR:planarRelease()
+    for part, saved in pairs(self.Receivers or {}) do
+        if part.Parent then
+            if math.abs(part.LocalTransparencyModifier - saved.Applied) < 1e-3 then part.LocalTransparencyModifier = saved.Modifier end
+            if saved.Shadow and not part.CastShadow then part.CastShadow = true end
+        end
+    end
+    for part, saved in pairs(self.Hidden or {}) do
+        if part.Parent and part.LocalTransparencyModifier >= 0.999 then part.LocalTransparencyModifier = saved.Modifier end
+    end
+    for _, entry in pairs(self.Copies or {}) do pcall(function() entry.Clone:Destroy() end) end
+    for _, shell in pairs(self.CopyShells or {}) do pcall(function() shell:Destroy() end) end
+    if self.CopyFolder then pcall(function() self.CopyFolder:Destroy() end) end
+    self.CopyFolder = nil
+    self.Receivers, self.Hidden, self.Copies, self.CopyShells = {}, {}, {}, {}
+    self.CopyDynamic, self.CopyStatic, self.CopyQueue = {}, {}, {}
+end
+
+-- The floor height under you: a ray down from your character. Changes wait a moment, so jumping or
+-- stepping on a crate does not flip the reflection.
+function SSR:planarPlane(now)
+    if now < (self.NextPlane or 0) then return end
+    self.NextPlane = now + 0.15
+    local hit = Scene.cast(Scene.Focus + UP * 2, Vector3.new(0, -60, 0), Scene.WorldParams)
+    local level
+    self.GroundMirror = false
+    if hit and hit.Normal.Y > 0.97 then
+        if hit.Instance:IsA("Terrain") then
+            self.GroundMirror = hit.Material ~= Enum.Material.Water
+        else
+            level = hit.Position.Y
+        end
+    end
+    if self.Blocked then self.GroundMirror = true end
+    if not level then
+        self.MissingSince = self.MissingSince or now
+        if self.Plane and now - self.MissingSince > 1.5 then self:planarSwitch(nil) end
+        return
+    end
+    self.MissingSince = nil
+    if not self.Plane then
+        self:planarSwitch(level)
+    elseif math.abs(level - self.Plane.Y) > 0.1 then
+        if not self.PendingY or math.abs(level - self.PendingY) > 0.1 then
+            self.PendingY, self.PendingSince = level, now
+        elseif now - self.PendingSince > 0.35 then
+            self:planarSwitch(level)
+        end
+    else
+        self.PendingY = nil
+    end
+end
+function SSR:planarSwitch(level)
+    self:planarRelease()
+    self.Job, self.PendingY, self.Blocked = nil, nil, false
+    self.NextScanAt = 0
+    if level then
+        self.Plane = {Y = level, Mirror = mirrorer(Vector3.new(0, level, 0), UP)}
+    else
+        self.Plane = nil
+    end
+end
+
+-- Sorts the parts around you into floor parts, parts under the floor and parts to reflect.
+-- Runs as a coroutine, a little each frame.
+function SSR:planarScan(level)
+    local cfg = self.Config
+    local nearby = self.Nearby
+    local receivers, below, above = {}, {}, {}
+    local budget = os.clock()
+    local function pause()
+        if os.clock() - budget > 0.0015 then
+            coroutine.yield()
+            budget = os.clock()
+        end
+    end
+    for index, part in ipairs(nearby) do
+        if part.Parent and part.Transparency < 0.95 and not part:IsA("Terrain") then
+            local cf, size = part.CFrame, part.Size
+            local half = halfHeight(cf, size)
+            local top, bottom = cf.Y + half, cf.Y - half
+            if math.abs(top - level) <= 0.2 and flatTopped(part, cf) then
+                table.insert(receivers, part)
+            elseif top < level - 0.05 then
+                table.insert(below, part)
+            elseif top > level + 0.2 then
+                table.insert(above, {Part = part, Bottom = bottom, Frame = cf})
+            end
+        end
+        if index % 100 == 0 then pause() end
+    end
+    -- A floor lying on terrain cannot show what is under it.
+    local open, blocked = {}, 0
+    for index, part in ipairs(receivers) do
+        local cf = part.CFrame
+        local hit = Workspace:Raycast(Vector3.new(cf.X, level - 0.05, cf.Z), Vector3.new(0, -12, 0), self.TerrainParams)
+        if hit then blocked = blocked + 1 else table.insert(open, part) end
+        if index % 40 == 0 then pause() end
+    end
+    -- Parts under an open floor are hidden. Floors go in a grid so each lookup checks only a few.
+    local hidden = {}
+    if cfg.HideBelow and #open > 0 then
+        local cell, grid = 16, {}
+        local eye = Scene.Eye
+        local reach = cfg.Range + cell
+        for _, part in ipairs(open) do
+            local cf, size = part.CFrame, part.Size
+            local ex, ez = halfFootprint(cf, size)
+            local x0 = math.floor(math.max(cf.X - ex, eye.X - reach) / cell)
+            local x1 = math.floor(math.min(cf.X + ex, eye.X + reach) / cell)
+            local z0 = math.floor(math.max(cf.Z - ez, eye.Z - reach) / cell)
+            local z1 = math.floor(math.min(cf.Z + ez, eye.Z + reach) / cell)
+            local box = {cf.X - ex, cf.X + ex, cf.Z - ez, cf.Z + ez}
+            for gx = x0, x1 do
+                for gz = z0, z1 do
+                    local key = gx .. ":" .. gz
+                    local list = grid[key]
+                    if not list then list = {}; grid[key] = list end
+                    table.insert(list, box)
+                end
+            end
+        end
+        for index, part in ipairs(below) do
+            local p = part.Position
+            local list = grid[math.floor(p.X / cell) .. ":" .. math.floor(p.Z / cell)]
+            if list then
+                for _, box in ipairs(list) do
+                    if p.X >= box[1] and p.X <= box[2] and p.Z >= box[3] and p.Z <= box[4] then
+                        hidden[part] = true
+                        break
+                    end
+                end
+            end
+            if index % 100 == 0 then pause() end
+        end
+    end
+    -- What to reflect: characters always, then the biggest and closest objects above the floor.
+    local wanted = {}
+    if cfg.Players then
+        local characters = table.clone(Scene.Characters)
+        for _, npc in ipairs(Scene.npcsNear(Scene.Eye, math.min(cfg.Range, 120), 8)) do table.insert(characters, npc) end
+        for _, character in ipairs(characters) do
+            local root = character.Root
+            if alive(root) and (root.Position - Scene.Eye).Magnitude < cfg.Range and root.Position.Y > level - 3 then
+                for _, part in ipairs(characterParts(character.Model)) do wanted[part] = {Owner = character.Model} end
+            end
+        end
+    end
+    if cfg.World then
+        local scored = {}
+        for _, item in ipairs(above) do
+            local part = item.Part
+            local trim = item.Bottom < level - 0.02 and trimmable(part, item.Frame)
+            -- Non-box parts sunk deep into the floor would poke through it when mirrored.
+            if item.Bottom >= level - 0.3 or trim then
+                local size = part.Size
+                local big = math.max(size.X, size.Y, size.Z)
+                if big > 0.3 then
+                    table.insert(scored, {Part = part, Trim = trim, Score = big * big / ((part.Position - Scene.Eye).Magnitude + 12)})
+                end
+            end
+        end
+        table.sort(scored, function(a, b) return a.Score > b.Score end)
+        for index = 1, math.min(#scored, math.min(cfg.Detail, cap("Parts"))) do
+            wanted[scored[index].Part] = {Owner = true, Trim = scored[index].Trim}
+        end
+    end
+    return {Receivers = open, Blocked = blocked, Hidden = hidden, Wanted = wanted}
+end
+
+function SSR:planarApply(result)
+    local receivers = {}
+    for _, part in ipairs(result.Receivers) do receivers[part] = true end
+    for part, saved in pairs(self.Receivers) do
+        if not receivers[part] then
+            if part.Parent then
+                if math.abs(part.LocalTransparencyModifier - saved.Applied) < 1e-3 then part.LocalTransparencyModifier = saved.Modifier end
+                if saved.Shadow and not part.CastShadow then part.CastShadow = true end
+            end
+            self.Receivers[part] = nil
+        end
+    end
+    for part in pairs(receivers) do
+        if not self.Receivers[part] then
+            local saved = {Modifier = part.LocalTransparencyModifier, Shadow = part.CastShadow, Applied = part.LocalTransparencyModifier}
+            -- The floor must not shade the reflection under it.
+            part.CastShadow = false
+            local cf = part.CFrame
+            local look = materialLook(part.Material)
+            saved.Material = self.Config.MaterialAware and clamp(look / 0.42, 0.35, 1) or 1
+            saved.HalfX, saved.HalfZ = halfFootprint(cf, part.Size)
+            saved.Center = cf.Position
+            self.Receivers[part] = saved
+        end
+    end
+    for part, saved in pairs(self.Hidden) do
+        if not result.Hidden[part] then
+            if part.Parent and part.LocalTransparencyModifier >= 0.999 then part.LocalTransparencyModifier = saved.Modifier end
+            self.Hidden[part] = nil
+        end
+    end
+    for part in pairs(result.Hidden) do
+        if not self.Hidden[part] then
+            self.Hidden[part] = {Modifier = part.LocalTransparencyModifier}
+            part.LocalTransparencyModifier = 1
+        end
+    end
+    -- Copies: drop what is no longer wanted, queue what is new.
+    local models = {}
+    for _, want in pairs(result.Wanted) do if want.Owner ~= true then models[want.Owner] = true end end
+    for source, entry in pairs(self.Copies) do
+        local want = result.Wanted[source]
+        if not want or source.Parent == nil or (want.Trim or false) ~= (entry.Trim or false) then
+            pcall(function() entry.Clone:Destroy() end)
+            self.Copies[source] = nil
+        end
+    end
+    for model, shell in pairs(self.CopyShells) do
+        if not models[model] or model.Parent == nil or not shell.Parent then
+            pcall(function() shell:Destroy() end)
+            self.CopyShells[model] = nil
+        end
+    end
+    local dynamic, static = {}, {}
+    for _, entry in pairs(self.Copies) do table.insert(entry.Dynamic and dynamic or static, entry) end
+    self.CopyDynamic, self.CopyStatic = dynamic, static
+    self.CopyQueue = {}
+    for source, want in pairs(result.Wanted) do
+        if not self.Copies[source] then table.insert(self.CopyQueue, {Source = source, Owner = want.Owner, Trim = want.Trim}) end
+    end
+    self.Blocked = #result.Receivers == 0 and result.Blocked > 0
+end
+
+-- Where a copy goes: trimmed boxes keep only the part above the floor, then everything is mirrored.
+function SSR:planarFrame(entry, level)
+    local source = entry.Source
+    local cf = source.CFrame
+    if entry.Trim then
+        local size = source.Size
+        local top = cf.Y + size.Y / 2
+        local height = clamp(top - level, 0.05, size.Y)
+        local trimmed = Vector3.new(size.X, height, size.Z)
+        if entry.Clone.Size ~= trimmed then entry.Clone.Size = trimmed end
+        cf = cf + Vector3.new(0, top - height / 2 - cf.Y, 0)
+    end
+    return self.Plane.Mirror(cf)
+end
+function SSR:planarBuild(job)
+    local source = job.Source
+    if not self.Plane or self.Copies[source] or source.Parent == nil then return end
+    local copy = visualCopy(source)
+    if not copy then return end
+    copy.Locked = true
+    if not alive(self.CopyFolder) then self.CopyFolder = new("Folder", {Name = "Planar"}, World.child("Reflections")) end
+    local parent = self.CopyFolder
+    if job.Owner ~= true then
+        local shell = self.CopyShells[job.Owner]
+        if not shell or not shell.Parent then
+            shell = characterShell(job.Owner)
+            shell.Parent = self.CopyFolder
+            self.CopyShells[job.Owner] = shell
+        end
+        parent = shell
+    end
+    local entry = {Source = source, Clone = copy, Trim = job.Trim, Dynamic = job.Owner ~= true or not source.Anchored}
+    copy.CFrame = self:planarFrame(entry, self.Plane.Y)
+    entry.Last = source.CFrame
+    copy.Parent = parent
+    self.Copies[source] = entry
+    table.insert(entry.Dynamic and self.CopyDynamic or self.CopyStatic, entry)
+end
+function SSR:planarSync()
+    local level = self.Plane.Y
+    local parts, frames = {}, {}
+    local function check(entry)
+        local source = entry.Source
+        if source.Parent == nil or not entry.Clone.Parent then return end
+        local cf = source.CFrame
+        if cf ~= entry.Last then
+            entry.Last = cf
+            parts[#parts + 1] = entry.Clone
+            frames[#frames + 1] = self:planarFrame(entry, level)
+        end
+    end
+    for _, entry in ipairs(self.CopyDynamic) do
+        check(entry)
+        if entry.Clone.Transparency ~= entry.Source.Transparency and entry.Source.Parent then entry.Clone.Transparency = entry.Source.Transparency end
+    end
+    local static = self.CopyStatic
+    for _ = 1, math.min(#static, 60) do
+        self.CopyIndex = self.CopyIndex % #static + 1
+        local entry = static[self.CopyIndex]
+        check(entry)
+        local source, copy = entry.Source, entry.Clone
+        if source.Parent and copy.Parent then
+            if copy.Transparency ~= source.Transparency then copy.Transparency = source.Transparency end
+            if copy.Color ~= source.Color then copy.Color = source.Color end
+            if not entry.Trim and copy.Size ~= source.Size then copy.Size = source.Size end
+        end
+    end
+    if #parts > 0 then
+        local ok = pcall(function() Workspace:BulkMoveTo(parts, frames, Enum.BulkMoveMode.FireCFrameChanged) end)
+        if not ok then for index, part in ipairs(parts) do part.CFrame = frames[index] end end
+    end
+end
+-- How see-through each floor part is: strength, Fresnel at the angle you see it, material and distance.
+function SSR:planarShade()
+    local cfg = self.Config
+    local level = self.Plane.Y
+    local eye = Scene.Eye
+    local height = math.max(eye.Y - level, 0.5)
+    local strength = cfg.Strength / 100
+    local fresnel = cfg.Fresnel / 100
+    local fade = cfg.Fade / 100
+    for part, saved in pairs(self.Receivers) do
+        if part.Parent then
+            local center = saved.Center
+            local dx = math.max(math.abs(eye.X - center.X) - saved.HalfX, 0)
+            local dz = math.max(math.abs(eye.Z - center.Z) - saved.HalfZ, 0)
+            local distance = math.sqrt(dx * dx + dz * dz)
+            local seen = math.max(distance, height * 1.6)
+            local cosine = height / math.sqrt(height * height + seen * seen)
+            local grazing = (1 - cosine) ^ 1.5
+            local amount = strength * saved.Material * (1 - fresnel + fresnel * (0.35 + 0.65 * grazing) * 1.25)
+            amount = amount * (1 - fade * clamp(distance / math.max(cfg.Range, 1), 0, 1))
+            amount = clamp(amount, 0, 0.9)
+            if math.abs(amount - saved.Applied) > 0.01 then
+                part.LocalTransparencyModifier = amount
+                saved.Applied = part.LocalTransparencyModifier
+            end
+        end
+    end
+end
+function SSR:planarUpdate(now)
+    local cfg = self.Config
+    if not cfg.Floors then
+        if self.Plane then self:planarSwitch(nil) end
+        self.GroundMirror = false
+        return
+    end
+    self:planarPlane(now)
+    if not self.Plane then return end
+    -- Under the floor (underwater, below the map) the copies would be seen directly: hide them.
+    local below = Scene.Eye.Y < self.Plane.Y + 0.25
+    if self.CopyFolder then
+        local target = not below and World.child("Reflections") or nil
+        if self.CopyFolder.Parent ~= target then pcall(function() self.CopyFolder.Parent = target end) end
+    end
+    if below then
+        for part, saved in pairs(self.Receivers) do
+            if part.Parent and saved.Applied > 0 then part.LocalTransparencyModifier = saved.Modifier; saved.Applied = saved.Modifier end
+        end
+        return
+    end
+    -- The scan runs as a coroutine across frames, once a second.
+    if not self.Job and now >= self.NextScanAt then
+        self.NextScanAt = now + 1
+        local level = self.Plane.Y
+        self.Job = coroutine.create(function() return self:planarScan(level) end)
+        self.JobLevel = level
+    end
+    if self.Job then
+        local ok, result = coroutine.resume(self.Job)
+        if not ok then
+            self.Job = nil
+            error(result, 0)
+        elseif coroutine.status(self.Job) == "dead" then
+            self.Job = nil
+            if self.Plane and self.JobLevel == self.Plane.Y then self:planarApply(result) end
+        end
+    end
+    local started = os.clock()
+    while #self.CopyQueue > 0 and os.clock() - started < 0.002 do
+        self:planarBuild(table.remove(self.CopyQueue, 1))
+    end
+    self:planarSync()
+    if now >= self.NextShade then
+        self.NextShade = now + 0.1
+        self:planarShade()
+    end
+end
+
 function SSR:Update(dt, now)
     local cfg = self.Config
-    self:scan(cap("Rays"))
-    -- One shared spatial query a second feeds every mirror.
+    -- One shared spatial query a second feeds the floor reflection and every mirror.
     if now >= self.NextNearby then
         self.NextNearby = now + 1
         self.Overlap.FilterDescendantsInstances = Scene.WorldParams.FilterDescendantsInstances
         local ok, parts = pcall(function() return Workspace:GetPartBoundsInRadius(Scene.Eye, cfg.Range, self.Overlap) end)
         self.Nearby = ok and parts or {}
     end
+    self:planarUpdate(now)
+    self:scan(cap("Rays"))
     -- Gather for one mirror per frame, each about once a second.
     local order = self.Order
     if #order > 0 then
@@ -2971,7 +3445,7 @@ function SSR:Update(dt, now)
             self:refresh(mirror, self:gather(mirror))
         end
     end
-    -- Build queued copies with a small time budget.
+    -- Build queued mirror copies with a small time budget.
     local started = os.clock()
     while #self.Queue > 0 and os.clock() - started < 0.002 do
         self:build(table.remove(self.Queue, 1))
@@ -2994,15 +3468,26 @@ function SSR:Update(dt, now)
             end
         end
     end
-    self.Surfaces, self.Copies = surfaces, copies
-    self.Info = surfaces .. " surface" .. (surfaces == 1 and "" or "s") .. " · " .. copies .. " objects"
+    local floors, floorCopies = 0, 0
+    for _ in pairs(self.Receivers) do floors = floors + 1 end
+    for _ in pairs(self.Copies) do floorCopies = floorCopies + 1 end
+    self.ReceiverCount, self.CopyCount = floors, floorCopies
+    self.Surfaces, self.Reflected = surfaces + (floors > 0 and 1 or 0), copies + floorCopies
+    local parts = {}
+    if self.Plane and floors > 0 then table.insert(parts, "floor: " .. floors .. " parts") end
+    if surfaces > 0 then table.insert(parts, surfaces .. " mirror" .. (surfaces == 1 and "" or "s")) end
+    table.insert(parts, (copies + floorCopies) .. " objects reflected")
+    if self.Blocked then table.insert(parts, "floor on terrain: using a mirror") end
+    self.Info = table.concat(parts, " · ")
 end
 function SSR:Stop()
+    self:planarRelease()
+    self.Plane = nil
     for _, mirror in ipairs(self.Order or {}) do pcall(function() mirror.Part:Destroy() end) end
     local folder = World.Folder and World.Folder:FindFirstChild("Reflections")
     if folder then folder:Destroy() end
     self.Mirrors, self.Order, self.Queue, self.Hits, self.Nearby = {}, {}, {}, {}, {}
-    self.Surfaces, self.Copies = 0, 0
+    self.Surfaces, self.Reflected = 0, 0
 end
 
 -- =============================================================================
@@ -3605,7 +4090,7 @@ function UI.refreshStats()
     local rim = 0
     for _ in pairs(FX.rim.Items or {}) do rim = rim + 1 end
     UI.StatWorld:Set(table.concat({
-        line("Reflections", plural(SSR.Surfaces or 0, "surface") .. " · " .. plural(SSR.Copies or 0, "object")),
+        line("Reflections", plural(SSR.Surfaces or 0, "surface") .. " · " .. plural(SSR.Reflected or 0, "object")),
         line("Shading", plural(FX.mxao.CardCount or 0, "card")),
         line("Lights", lights .. " bounce · " .. rim .. " rim"),
     }, "\n"))

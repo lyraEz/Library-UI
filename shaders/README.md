@@ -25,7 +25,7 @@ Changes save by themselves to `workspace/LyraShaders/settings.json` (executors w
 | Colour | Brightness, contrast, saturation, white balance (temperature and tint) and ten tones | A colour correction layer; Retro and Filmic also use Roblox's tonemapper where available |
 | LUT | Ten built-in looks, `.cube` files (1D and 3D) and ReShade PNG strips | The table is decoded (PNG included), measured and fitted to a colour correction layer |
 | MXAO | Soft shading where objects meet floors and ceilings, contact shadows, bounce light | Shading cards laid along each crease near you; round contact shadows under characters |
-| SSR | Real-time reflections of players, you and the world on floors, walls, ceilings and water | Planar mirrors, see below |
+| SSR | Real-time reflections of players, you and the world on floors, walls, ceilings and water | Mirrored copies under a locally see-through floor; mirrors on walls; see below |
 | Global Illumination | Light bouncing off sunlit surfaces onto their neighbours, colour bleeding | A light probe finds the brightest sunlit surfaces and places soft lights of their colour |
 | Ambient light | Lifts shadows with the colour of the light around you | The probe's average colour added to the ambient light |
 | Depth of field | Focus and blur with a thin-lens model (focal length, f-stop, focus distance) | Depth-of-field layer driven by the lens maths; auto, character or manual focus |
@@ -41,17 +41,21 @@ Changes save by themselves to `workspace/LyraShaders/settings.json` (executors w
 
 ## How the reflections work
 
-Rays across the screen find the biggest reflective surfaces in view. Floor tiles on the same level are joined into one surface. Each surface gets a mirror: a thin invisible part lying on it with a SurfaceGui and a ViewportFrame. The ViewportFrame holds copies of the characters and objects nearby, mirrored across the surface, and its camera sits exactly where your camera is, looking straight into the surface. With the camera perpendicular to the surface, the image maps onto the surface with a plain scale and offset, so the ViewportFrame is sized and placed inside the SurfaceGui (an off-axis projection) and the mirrored world lines up with the real one from any angle. Because the mirror is drawn on the surface, anything standing in front of it hides its reflection correctly.
+**Floors** reflect like a wet or polished floor, all the way to the horizon. A ray down from your character finds the floor height. Everything near you that stands above it (players, you, NPCs and the map) is copied and mirrored under the floor, and the floor parts around you turn partly see-through on your screen only (`LocalTransparencyModifier`, which other players never see). Parts right under a reflective floor are hidden while it reflects, and parts sunk into the floor are trimmed so their copies never poke through. Because the reflection is real geometry, the game's renderer handles depth, lighting and distance: anything in front of the floor hides its reflection, and neon parts and lamps glow in it.
 
-Moving copies (characters, unanchored parts) are updated every frame in one bulk move; still objects are checked a few at a time. Reflection strength follows the material (glass, marble, metal, ceramic and polished plastic reflect most), the viewing angle (Fresnel) and how bright the surface is.
+How much a floor part shows the reflection depends on Strength, the angle you see it at (Fresnel), its distance (Distance fade) and, with Follow materials on, its material: marble, glass, metal, ceramic and polished plastic reflect most; grass, fabric and brick least.
+
+**Walls** (and terrain ground, and floors that sit on terrain) get mirrors: a thin invisible part on the surface carrying a SurfaceGui and a ViewportFrame with mirrored copies of the scene, seen from your camera through an off-axis projection so it lines up from any angle.
+
+**Water** uses Roblox's own water reflections, turned up with Strength.
 
 ## Limits
 
 Roblox gives scripts no pixel shaders, so these are the honest trade-offs:
 
-- Copies inside reflections use simple directional lighting (no shadows, no point lights, no particles or terrain). Meshes keep their own handedness, so text and asymmetric meshes are not flipped.
-- A Roblox camera stops at 120° of view. Looking very low along a long floor, the part of the floor far to the sides may not reflect.
-- Reflections need flat surfaces: blocks, flat mesh slabs and terrain water. Round parts, slopes and terrain other than water do not reflect.
+- Floor reflections need the floor to be parts (blocks, meshes or unions). Terrain cannot be made see-through, so terrain ground and floors lying on terrain get a mirror instead, which reaches less far at very low angles (Roblox cameras stop at 120° of view).
+- While a floor reflects, it is partly see-through on your screen, so its own shadows look lighter, and what is right under it is hidden.
+- Copies keep their own handedness, so text and asymmetric meshes are not flipped. Wall mirrors use simple lighting (no shadows or point lights).
 - MXAO, Global Illumination and Exposure are built in the world from raycasts, not from the depth buffer. They are approximations of the shader effects with the same names.
 - Sharpness raises local contrast; Roblox has no sharpening filter.
 - Deband uses an EditableImage when the game allows it, and a light glyph pattern when it does not.
@@ -59,7 +63,7 @@ Roblox gives scripts no pixel shaders, so these are the honest trade-offs:
 
 ## Phones
 
-The engine starts on the Low quality level on phones and tablets, and auto quality (Settings) does less work whenever the frame rate drops below the target. Reflections and MXAO are the heaviest effects; Statistics shows what each one costs.
+The engine starts on the Low quality level on phones and tablets, and auto quality (Settings) does less work whenever the frame rate drops below the target. Reflections and MXAO are the heaviest effects; lower Reflected objects on the SSR page if the frame rate drops. Statistics shows what each effect costs.
 
 ## LUT files
 
@@ -83,4 +87,4 @@ Shaders.Unload()
 lune run tests/shaders/run.luau
 ```
 
-Runs Lyra UI and the shaders inside the [LuaU-Mock-Kit](https://github.com/lyraEz/LuaU-Mock-Kit) harness (checked out next to this repository; the path is in `tests/shaders/.luaurc`). It turns every effect on and off, checks that each reflection lands exactly on the true reflection for hundreds of random surfaces and camera positions, decodes and fits LUT files, clicks through the interface, runs the chat commands and checks that turning the engine off or unloading leaves the game's lighting as it was.
+Runs Lyra UI and the shaders inside the [LuaU-Mock-Kit](https://github.com/lyraEz/LuaU-Mock-Kit) harness (checked out next to this repository; the path is in `tests/shaders/.luaurc`). It turns every effect on and off, checks the floor reflection (mirrored copies, see-through floor, hidden and trimmed parts, full restore), checks that each wall-mirror reflection lands exactly on the true reflection for hundreds of random surfaces and camera positions, decodes and fits LUT files, clicks through the interface, runs the chat commands and checks that turning the engine off or unloading leaves the game's lighting as it was.

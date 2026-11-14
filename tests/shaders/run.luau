@@ -51,6 +51,9 @@ part({Name = "Ceiling", Size = V3.new(60, 1, 60), CFrame = CF.new(0, 20.5, 0)})
 for i = 1, 30 do
     part({Name = "Crate" .. i, Size = V3.new(2, 2, 2), CFrame = CF.new((i % 6) * 4 - 12, 1, math.floor(i / 6) * 4 - 10)})
 end
+-- Under the floor (hidden while it reflects) and a pillar sunk into it (its copy is trimmed at the floor).
+local basement = part({Name = "Basement", Size = V3.new(10, 1, 10), CFrame = CF.new(5, -5, 5)})
+part({Name = "Pillar", Size = V3.new(2, 8, 2), CFrame = CF.new(-20, 2, 20)})
 local lamp = Instance.new("PointLight")
 lamp.Brightness, lamp.Range = 3, 20
 lamp.Parent = part({Name = "Lamp", Size = V3.new(1, 1, 1), CFrame = CF.new(-5, 8, -5), Material = Enum.Material.Neon})
@@ -233,28 +236,36 @@ end
 frames(300)
 noErrors("all effects running")
 local ssr = api.Effects.ssr
-local floorMirror
+local floor, pillar = ws:FindFirstChild("Floor"), ws:FindFirstChild("Pillar")
+check(ssr.Plane ~= nil and math.abs(ssr.Plane.Y) < 1e-3, "the floor under you is the reflection plane")
+check(floor.LocalTransparencyModifier > 0.2 and not floor.CastShadow, "the floor turns see-through on this screen (" .. floor.LocalTransparencyModifier .. ")")
+check(floor.Transparency == 0, "the floor's real transparency is untouched")
+check(basement.LocalTransparencyModifier == 1, "what is under the floor is hidden")
+check(ssr.Copies[floor] == nil, "the floor itself is not copied")
+local head = player.Character:FindFirstChild("Head")
+local headCopy = ssr.Copies[head]
+check(headCopy ~= nil, "your character is reflected")
+if headCopy then
+    check(math.abs(headCopy.Clone.Position.Y + head.Position.Y) < 1e-3, "the reflected head sits mirrored under the floor")
+    check(headCopy.Clone.Parent:FindFirstChildOfClass("Humanoid") ~= nil, "reflected characters keep a Humanoid for clothing")
+    check(not headCopy.Clone.CanQuery and not headCopy.Clone.CanCollide and not headCopy.Clone.CanTouch, "copies are invisible to raycasts, physics and touches")
+    check(headCopy.Clone:IsDescendantOf(env.workspace.CurrentCamera), "copies live in the camera, never replicated")
+    local root = player.Character:FindFirstChild("HumanoidRootPart")
+    root.CFrame += V3.new(3, 0, 0)
+    frames(2)
+    check(math.abs(headCopy.Clone.Position.X - head.Position.X) < 1e-3, "the reflection follows you the next frame")
+end
+local crateCopy = ssr.Copies[ws:FindFirstChild("Crate1")]
+check(crateCopy ~= nil and math.abs(crateCopy.Clone.Position.Y + 1) < 1e-3, "objects are mirrored under the floor")
+local pillarCopy = ssr.Copies[pillar]
+check(pillarCopy ~= nil and math.abs(pillarCopy.Clone.Size.Y - 6) < 1e-3 and math.abs(pillarCopy.Clone.Position.Y + 3) < 1e-3,
+    "a part sunk into the floor is trimmed so its copy never pokes through")
+local wallMirror
 for _, mirror in ssr.Order do
-    if mirror.Group.Normal.Y > 0.9 then floorMirror = mirror end
+    if math.abs(mirror.Group.Normal.Y) < 0.25 then wallMirror = mirror end
 end
-check(floorMirror ~= nil, "the floor gets a mirror")
-check(#ssr.Order >= 2, "a wall gets a mirror too")
-if floorMirror then
-    local head = player.Character:FindFirstChild("Head")
-    local entry = floorMirror.Entries[head]
-    check(entry ~= nil, "your character is in the floor reflection")
-    if entry then
-        check(math.abs(entry.Clone.Position.Y + head.Position.Y) < 1e-3, "the reflected head sits mirrored under the floor")
-        check(entry.Clone.Parent:FindFirstChildOfClass("Humanoid") ~= nil, "reflected characters keep a Humanoid for clothing")
-        local root = player.Character:FindFirstChild("HumanoidRootPart")
-        root.CFrame += V3.new(3, 0, 0)
-        frames(2)
-        check(math.abs(entry.Clone.Position.X - head.Position.X) < 1e-3, "the reflection follows you the next frame")
-    end
-    check(floorMirror.Part.Transparency == 1 and not floorMirror.Part.CanQuery, "mirror parts are invisible to the game")
-    check(floorMirror.View.ImageTransparency < 0.9, "the floor reflection is visible")
-    check(floorMirror.Group.Rect[2] - floorMirror.Group.Rect[1] >= 200, "the whole floor is one mirror")
-end
+check(wallMirror ~= nil, "a wall gets a mirror")
+if wallMirror then check(wallMirror.View.ImageTransparency < 0.95, "the wall mirror is visible") end
 local cards, flat = 0, true
 for _, entry in api.Effects.mxao.Parts do
     for _, card in entry.Cards do
@@ -327,6 +338,9 @@ asPlayer(function() Window:SetFlag("engine.on", false) end)
 frames(5)
 check(#Lighting:GetChildren() <= 1, "engine off removes every effect layer")
 check(Lighting.ClockTime == 9, "the game's own time comes back")
+check(floor.LocalTransparencyModifier == 0 and floor.CastShadow, "engine off makes the floor solid again")
+check(basement.LocalTransparencyModifier == 0, "engine off shows what is under the floor again")
+check(env.workspace.CurrentCamera:FindFirstChild("Reflections", true) == nil, "engine off removes the copies")
 local now = {Lighting.Ambient, Lighting.OutdoorAmbient, Lighting.ExposureCompensation, Lighting.Brightness, Lighting.EnvironmentDiffuseScale}
 for index, value in original do
     check(tostring(now[index]) == tostring(value), "lighting value " .. index .. " restored")
