@@ -40,6 +40,16 @@ Window:Notify({Title = "Loaded", Text = "Press RightControl to hide.", Kind = "s
 
 More in [`examples/`](examples): `minimal.lua` and `showcase.lua`, which uses every element.
 
+## Lyra Shaders
+
+[`shaders/`](shaders) holds Lyra Shaders, a full shader pack built on Lyra UI: colour grading, LUTs, ambient occlusion, real-time reflections, global illumination, depth of field, eye adaptation, lens flares and more, all client-side.
+
+```lua
+loadstring(game:HttpGet("https://raw.githubusercontent.com/lyraEz/Library-UI/main/shaders/LyraShaders.lua"))()
+```
+
+See [`shaders/README.md`](shaders/README.md) for every effect and how it works.
+
 ## Documentation
 
 The full reference (window options and methods, every element, themes, flags, icons, chat commands) is in [`site/docs.html`](site/docs.html). The website in [`site/`](site) is plain HTML, CSS and JavaScript with no build step: open `site/index.html` locally or host the folder on any static host (GitHub Pages, Cloudflare Pages, Netlify).
@@ -55,7 +65,9 @@ The tests run the library with the Luau CLI against a small stand-in of the Robl
 ```
 src/Lyra.lua          the library
 examples/             minimal and showcase hubs
+shaders/              Lyra Shaders, built on the library
 tests/                mock Roblox API, scenario and runner
+tests/shaders/        Lyra Shaders test (runs in the LuaU-Mock-Kit harness)
 site/                 website and documentation
 ```
 

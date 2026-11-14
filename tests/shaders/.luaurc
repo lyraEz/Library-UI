@@ -1,0 +1,5 @@
+{
+	"aliases": {
+		"harness": "../../../LuaU-Mock-Kit/harness"
+	}
+}
